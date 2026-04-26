@@ -15,8 +15,8 @@ enum State {
 @export_group("Movement Settings")
 @export var patrol_speed: float = 2.0
 @export var chase_speed: float = 5.5
-@export var acceleration: float = 8.0
-@export var deceleration: float = 10.0
+@export var acceleration: float = 15.0
+@export var deceleration: float = 20.0
 
 @export_group("Detection Settings")
 @export var detection_range: float = 15.0
@@ -87,10 +87,19 @@ func _connect_perception_signals() -> void:
 	if perception:
 		if perception.has_signal("player_seen"):
 			perception.player_seen.connect(_on_player_seen)
+			print("[MonsterAI] 已连接 player_seen 信号")
+		else:
+			push_warning("[MonsterAI] Perception 节点没有 player_seen 信号")
+		
 		if perception.has_signal("noise_heard"):
 			perception.noise_heard.connect(_on_noise_heard)
+			print("[MonsterAI] 已连接 noise_heard 信号")
+		
 		if perception.has_signal("player_lost"):
 			perception.player_lost.connect(_on_player_lost)
+			print("[MonsterAI] 已连接 player_lost 信号")
+	else:
+		push_warning("[MonsterAI] 没有找到 Perception 节点")
 
 func _physics_process(delta: float) -> void:
 	match current_state:
@@ -104,8 +113,12 @@ func _physics_process(delta: float) -> void:
 			_process_search(delta)
 	
 	_apply_gravity(delta)
-	_move_towards_target(delta)
-	move_and_slide()
+	_calculate_velocity(delta)
+	
+	if navigation_agent and navigation_agent.avoidance_enabled:
+		navigation_agent.set_velocity(velocity)
+	else:
+		move_and_slide()
 
 func _process_patrol(delta: float) -> void:
 	if _patrol_point_nodes.size() == 0:
@@ -178,7 +191,7 @@ func _apply_gravity(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y -= _gravity * delta
 
-func _move_towards_target(delta: float) -> void:
+func _calculate_velocity(delta: float) -> void:
 	if not navigation_agent:
 		return
 	
@@ -199,13 +212,14 @@ func _move_towards_target(delta: float) -> void:
 	
 	_look_at_direction(direction)
 
+func _on_velocity_computed(safe_velocity: Vector3) -> void:
+	velocity = safe_velocity
+	move_and_slide()
+
 func _look_at_direction(direction: Vector3) -> void:
 	if direction.length_squared() > 0.001:
 		var target_rotation := atan2(direction.x, direction.z)
 		rotation.y = lerp_angle(rotation.y, target_rotation, 0.1)
-
-func _on_velocity_computed(safe_velocity: Vector3) -> void:
-	velocity = safe_velocity
 
 func change_state(new_state: State) -> void:
 	if current_state == new_state:
@@ -239,6 +253,7 @@ func change_state(new_state: State) -> void:
 	emit_signal("state_changed", State.keys()[new_state])
 
 func _on_player_seen(player_position: Vector3) -> void:
+	print("[MonsterAI] _on_player_seen 被调用，位置: %s" % player_position)
 	last_known_player_position = player_position
 	
 	if current_state == State.PATROL or current_state == State.ALERT:

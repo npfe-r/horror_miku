@@ -32,6 +32,12 @@ layout_mode = 2
 text = "可以起身: 是"
 visible = false
 
+[node name="MonsterLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "敌人状态: 巡逻
+速度: 0.00 m/s"
+visible = false
+
 [node name="InventoryContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 1

@@ -18,6 +18,8 @@ size = Vector3(0.5, 0.1, 0.5)
 albedo_color = Color(0.2, 0.6, 1, 1)
 
 [node name="Player" type="CharacterBody3D" unique_id=2034620249]
+collision_layer = 1
+collision_mask = 3
 script = ExtResource("1_player")
 _head_height_normal = 1.5
 _head_height_crouch = 1.0

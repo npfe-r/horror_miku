@@ -9,7 +9,7 @@ signal player_lost
 @export var sight_range: float = 15.0
 @export var sight_angle: float = 60.0
 @export var sight_update_interval: float = 0.2
-@export var vision_ray_mask: int = 1
+@export var vision_ray_mask: int = 4294967295
 
 @export_group("Hearing Settings")
 @export var hearing_range: float = 25.0
@@ -27,14 +27,20 @@ func _ready() -> void:
 		push_error("MonsterPerception 必须作为 CharacterBody3D 的子节点")
 		return
 	
-	_setup_player_reference()
-	_connect_player_noise_signal()
+	call_deferred("_setup_player_reference")
 
 func _setup_player_reference() -> void:
+	await get_tree().physics_frame
+	
 	var players := get_tree().get_nodes_in_group("player")
 	if players.size() > 0:
 		_player_ref = weakref(players[0])
-		print("[MonsterPerception] 找到玩家引用")
+		print("[MonsterPerception] 找到玩家引用: %s" % players[0].name)
+		_connect_player_noise_signal()
+	else:
+		push_warning("[MonsterPerception] 未找到玩家，将在1秒后重试")
+		await get_tree().create_timer(1.0).timeout
+		_setup_player_reference()
 
 func _connect_player_noise_signal() -> void:
 	var player := _get_player()
@@ -80,19 +86,24 @@ func _check_vision() -> void:
 		player_pos + Vector3(0, 1.0, 0)
 	)
 	query.collision_mask = vision_ray_mask
+	query.exclude = [_monster.get_rid()]
 	
 	var result := space_state.intersect_ray(query)
 	
-	if result.is_empty():
-		if not _can_see_player:
-			_can_see_player = true
-			_last_seen_position = player_pos
-			emit_signal("player_seen", player_pos)
-	elif _can_see_player:
+	var can_see := false
+	if not result.is_empty():
 		var collider = result.get("collider")
-		if collider != player:
-			_can_see_player = false
-			emit_signal("player_lost")
+		if collider == player:
+			can_see = true
+	
+	if can_see and not _can_see_player:
+		_can_see_player = true
+		_last_seen_position = player_pos
+		emit_signal("player_seen", player_pos)
+		print("[MonsterPerception] 看到玩家！距离: %.1fm, 角度: %.1f°" % [distance, angle])
+	elif not can_see and _can_see_player:
+		_can_see_player = false
+		emit_signal("player_lost")
 
 func _on_player_noise_made(noise_level: float, noise_position: Vector3) -> void:
 	if noise_level < noise_threshold:

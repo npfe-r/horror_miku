@@ -34,7 +34,14 @@ surface_material_override/0 = ExtResource("3_material")
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
 radius = 0.5
 height = 1.8
+path_desired_distance = 0.5
+target_desired_distance = 0.5
 avoidance_enabled = true
+debug_enabled = true
+neighbor_distance = 50.0
+max_neighbors = 10
+time_horizon = 1.0
+max_speed = 6.0
 
 [node name="Perception" type="Node" parent="."]
 script = ExtResource("2_perception")

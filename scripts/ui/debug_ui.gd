@@ -4,14 +4,17 @@ extends Control
 @onready var noise_label: Label = $VBoxContainer/NoiseLabel
 @onready var state_label: Label = $VBoxContainer/StateLabel
 @onready var stand_up_label: Label = $VBoxContainer/StandUpLabel
+@onready var monster_label: Label = $VBoxContainer/MonsterLabel
 @onready var quick_bar_label: Label = $InventoryContainer/QuickBarLabel
 @onready var items_label: Label = $InventoryContainer/ItemsLabel
 
 var player: PlayerController = null
+var monster: MonsterAI = null
 
 func _ready() -> void:
 	await get_tree().process_frame
 	_find_and_connect_player()
+	_find_and_connect_monster()
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and event.keycode == KEY_T:
@@ -45,6 +48,7 @@ func _process(_delta: float) -> void:
 		return
 	
 	_update_state_display()
+	_update_monster_display()
 
 func _on_noise_made(noise_level: float, _position: Vector3) -> void:
 	if noise_label:
@@ -148,3 +152,31 @@ func _update_items_list_display() -> void:
 	
 	print("[DebugUI] 物品列表文本: %s" % items_text.replace("\n", "\\n"))
 	items_label.text = items_text
+
+func _find_and_connect_monster() -> void:
+	var monsters := get_tree().get_nodes_in_group("enemies")
+	if monsters.size() > 0:
+		monster = monsters[0] as MonsterAI
+		if monster:
+			print("[DebugUI] 找到敌人节点")
+		else:
+			push_warning("[DebugUI] 敌人节点类型不正确")
+	else:
+		push_warning("[DebugUI] 未找到敌人节点")
+
+func _update_monster_display() -> void:
+	if not monster_label or not monster:
+		if monster_label:
+			monster_label.visible = false
+		return
+	
+	monster_label.visible = true
+	
+	var speed := Vector2(monster.velocity.x, monster.velocity.z).length()
+	var distance := ""
+	
+	if player:
+		var dist_to_player := monster.global_position.distance_to(player.global_position)
+		distance = " | 距离: %.1fm" % dist_to_player
+	
+	monster_label.text = "敌人状态: %s\n速度: %.2f m/s%s" % [monster.get_state_name(), speed, distance]
