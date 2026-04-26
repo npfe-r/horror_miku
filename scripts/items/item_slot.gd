@@ -19,7 +19,7 @@ func can_add_amount(amount: int) -> bool:
 	return count + amount <= item_data.max_stack
 
 func add_amount(amount: int) -> int:
-	if is_empty():
+	if not item_data:
 		return amount
 	
 	var space_available: int = item_data.max_stack - count

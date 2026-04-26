@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3 uid="uid://c8flash_example001"]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1_flash"]
+
+[resource]
+script = ExtResource("1_flash")
+item_id = "flashlight_001"
+item_name = "手电筒"
+description = "一个手电筒，可以照亮黑暗的区域。注意：使用时会暴露你的位置！"
+item_type = 2
+max_stack = 1
+is_consumable = false
+use_effect = "flashlight"

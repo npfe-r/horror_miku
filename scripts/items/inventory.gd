@@ -31,10 +31,13 @@ func add_item(item: ItemData, amount: int = 1) -> bool:
 	remaining = _try_add_to_empty_slot(item, remaining)
 	
 	if remaining < amount:
-		emit_signal("item_added", item, amount - remaining)
+		var added_count: int = amount - remaining
+		print("[背包] 添加物品: %s x%d" % [item.item_name, added_count])
+		emit_signal("item_added", item, added_count)
 		emit_signal("inventory_changed")
 		return true
 	
+	print("[背包] 添加物品失败: %s (背包已满)" % item.item_name)
 	return false
 
 func _try_stack_existing_item(item: ItemData, amount: int) -> int:
@@ -57,30 +60,30 @@ func _try_add_to_empty_slot(item: ItemData, amount: int) -> int:
 		if not slot.is_empty():
 			continue
 		
-		while remaining > 0:
-			slot.set_item(item, 0)
-			var to_add: int = mini(remaining, item.max_stack)
-			slot.add_amount(to_add)
-			remaining -= to_add
-			
-			if remaining <= 0:
-				break
-			else:
-				break
+		var to_add: int = mini(remaining, item.max_stack)
+		slot.set_item(item, to_add)
+		remaining -= to_add
+		
+		if remaining <= 0:
+			break
 	
 	return remaining
 
 func remove_item(item_id: String, amount: int = 1) -> bool:
 	var total_count: int = get_item_count(item_id)
 	if total_count < amount:
+		print("[背包] 移除物品失败: %s (数量不足)" % item_id)
 		return false
 	
+	var item_name: String = ""
 	var remaining: int = amount
 	for i in range(slots.size() - 1, -1, -1):
 		var slot: ItemSlot = slots[i]
 		if slot.is_empty():
 			continue
 		if slot.item_data.item_id == item_id:
+			if item_name.is_empty():
+				item_name = slot.item_data.item_name
 			var removed: int = slot.remove_amount(remaining)
 			remaining -= removed
 			
@@ -88,7 +91,9 @@ func remove_item(item_id: String, amount: int = 1) -> bool:
 				break
 	
 	if remaining < amount:
-		emit_signal("item_removed", item_id, amount - remaining)
+		var removed_count: int = amount - remaining
+		print("[背包] 移除物品: %s x%d" % [item_name, removed_count])
+		emit_signal("item_removed", item_id, removed_count)
 		emit_signal("inventory_changed")
 		return true
 	
@@ -118,13 +123,19 @@ func get_item_at_slot(index: int) -> ItemData:
 func use_item(slot_index: int, user: Node = null) -> bool:
 	var slot: ItemSlot = get_slot(slot_index)
 	if not slot or slot.is_empty():
+		print("[背包] 使用物品失败: 槽位为空")
 		return false
 	
 	var item: ItemData = slot.item_data
+	print("[背包] 使用物品: %s" % item.item_name)
 	var effect_success: bool = ItemEffectManager.use_item(item, user)
 	
-	if effect_success and item.is_consumable:
-		remove_item(item.item_id, 1)
+	if effect_success:
+		print("[背包] 物品效果生效: %s" % item.item_name)
+		if item.is_consumable:
+			remove_item(item.item_id, 1)
+	else:
+		print("[背包] 物品效果失败: %s" % item.item_name)
 	
 	return effect_success
 
@@ -161,6 +172,11 @@ func select_quick_slot(index: int) -> bool:
 		return false
 	
 	selected_quick_slot = index
+	var item: ItemData = get_selected_item()
+	if item:
+		print("[背包] 选择快捷栏 [%d]: %s" % [index + 1, item.item_name])
+	else:
+		print("[背包] 选择快捷栏 [%d]: 空" % [index + 1])
 	emit_signal("selected_slot_changed", index)
 	return true
 

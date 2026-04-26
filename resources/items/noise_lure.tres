@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3 uid="uid://c8noise_example001"]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1_noise"]
+
+[resource]
+script = ExtResource("1_noise")
+item_id = "noise_lure_001"
+item_name = "噪音诱饵"
+description = "一个可以制造噪音的装置，用于吸引怪物的注意力。"
+item_type = 1
+max_stack = 3
+is_consumable = true
+use_effect = "noise_lure"

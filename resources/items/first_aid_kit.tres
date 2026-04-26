@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3 uid="uid://c8heal_example001"]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1_heal"]
+
+[resource]
+script = ExtResource("1_heal")
+item_id = "first_aid_kit_001"
+item_name = "急救包"
+description = "一个急救包，使用后可以恢复体力。"
+item_type = 1
+max_stack = 5
+is_consumable = true
+use_effect = "heal"

@@ -15,6 +15,9 @@ func _ready() -> void:
 func set_player(player_node: Node) -> void:
 	player = player_node
 
+func get_player() -> Node:
+	return player
+
 func check_interaction(from: Vector3, to: Vector3, space_state: PhysicsDirectSpaceState3D) -> void:
 	var query := PhysicsRayQueryParameters3D.create(from, to)
 	query.collision_mask = 1

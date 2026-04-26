@@ -4,6 +4,8 @@ extends CharacterBody3D
 signal noise_made(noise_level: float, position: Vector3)
 signal stamina_changed(stamina: float)
 signal interaction_prompt_changed(prompt_text: String)
+signal item_picked_up(item: ItemData, count: int)
+signal inventory_updated()
 
 const WALK_SPEED: float = 3.5
 const RUN_SPEED: float = 6.0
@@ -48,6 +50,8 @@ var _can_stand_up: bool = true
 var _current_interactable: Node = null
 var _previous_interactable: Node = null
 
+var inventory: Inventory = null
+
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera3D
 @onready var interaction_ray: RayCast3D = $Head/InteractionRay
@@ -55,10 +59,12 @@ var _previous_interactable: Node = null
 @onready var ceiling_check: ShapeCast3D = $CeilingCheck
 
 func _ready() -> void:
+	add_to_group("player")
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	_target_head_height = HEAD_HEIGHT_NORMAL
 	head.position.y = HEAD_HEIGHT_NORMAL
 	
+	_setup_inventory()
 	_setup_interaction_manager()
 
 func _input(event: InputEvent) -> void:
@@ -79,6 +85,7 @@ func _physics_process(delta: float) -> void:
 	_smooth_crouch_transition(delta)
 	_check_interaction()
 	_handle_interaction_input()
+	_handle_quick_bar_input()
 	move_and_slide()
 
 func _handle_movement(delta: float) -> void:
@@ -252,16 +259,78 @@ func _handle_interaction_input() -> void:
 		if _current_interactable and _current_interactable.has_method(&"can_interact"):
 			var can_interact_result: bool = _current_interactable.call(&"can_interact")
 			if can_interact_result and _current_interactable.has_method(&"interact"):
-				var should_clear: bool = true
-				var result = _current_interactable.call(&"interact")
-				if result is bool:
-					should_clear = result
-				else:
-					should_clear = true
+				_current_interactable.call(&"interact")
 				
-				if should_clear:
-					if _current_interactable and _current_interactable.has_method(&"set_highlight"):
-						_current_interactable.call(&"set_highlight", false)
-					_current_interactable = null
-					_previous_interactable = null
-					emit_signal("interaction_prompt_changed", "")
+				if _current_interactable and _current_interactable.has_method(&"set_highlight"):
+					_current_interactable.call(&"set_highlight", false)
+				_current_interactable = null
+				_previous_interactable = null
+				emit_signal("interaction_prompt_changed", "")
+
+func _setup_inventory() -> void:
+	inventory = Inventory.new()
+	add_child(inventory)
+	inventory.item_added.connect(_on_inventory_item_added)
+	inventory.inventory_changed.connect(_on_inventory_changed)
+	print("[PlayerController] 背包系统已初始化")
+
+func _handle_quick_bar_input() -> void:
+	if Input.is_action_just_pressed("quick_slot_1"):
+		inventory.select_quick_slot(0)
+	elif Input.is_action_just_pressed("quick_slot_2"):
+		inventory.select_quick_slot(1)
+	elif Input.is_action_just_pressed("quick_slot_3"):
+		inventory.select_quick_slot(2)
+	elif Input.is_action_just_pressed("quick_slot_4"):
+		inventory.select_quick_slot(3)
+	
+	if Input.is_action_just_pressed("use_item"):
+		use_current_item()
+
+func pickup_item(item: ItemData, count: int = 1) -> bool:
+	if not inventory:
+		print("[PlayerController] pickup_item 失败: 背包未初始化")
+		return false
+	
+	print("[PlayerController] pickup_item 调用: %s x%d" % [item.item_name, count])
+	var success: bool = inventory.add_item(item, count)
+	print("[PlayerController] pickup_item 结果: %s" % ("成功" if success else "失败"))
+	return success
+
+func use_current_item() -> void:
+	if not inventory:
+		return
+	
+	inventory.use_quick_slot_item(inventory.selected_quick_slot, self)
+
+func use_item_at_slot(slot_index: int) -> bool:
+	if not inventory:
+		return false
+	return inventory.use_item(slot_index, self)
+
+func has_item(item_id: String, amount: int = 1) -> bool:
+	if not inventory:
+		return false
+	return inventory.has_item(item_id, amount)
+
+func remove_item(item_id: String, amount: int = 1) -> bool:
+	if not inventory:
+		return false
+	return inventory.remove_item(item_id, amount)
+
+func get_item_count(item_id: String) -> int:
+	if not inventory:
+		return 0
+	return inventory.get_item_count(item_id)
+
+func heal(amount: float = 50.0) -> void:
+	stamina = mini(stamina + amount, STAMINA_MAX)
+	emit_signal("stamina_changed", stamina)
+
+func _on_inventory_item_added(item: ItemData, count: int) -> void:
+	print("[PlayerController] 物品添加信号: %s x%d" % [item.item_name, count])
+	emit_signal("item_picked_up", item, count)
+
+func _on_inventory_changed() -> void:
+	print("[PlayerController] 背包变化信号")
+	emit_signal("inventory_updated")
