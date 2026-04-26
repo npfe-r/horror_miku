@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://b6k8twejfmlna"]
+
+[ext_resource type="Script" uid="uid://dhlyvnwuwumeq" path="res://scripts/objects/test_door.gd" id="1_door"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_door"]
+size = Vector3(1, 2.2, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_door"]
+size = Vector3(1, 2.2, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_door"]
+albedo_color = Color(0.6, 0.4, 0.2, 1)
+
+[node name="TestDoor" type="Node3D" unique_id=375017762]
+script = ExtResource("1_door")
+
+[node name="Pivot" type="Node3D" parent="." unique_id=1165327549]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 0, 0)
+
+[node name="DoorBody" type="AnimatableBody3D" parent="Pivot" unique_id=36897301]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, 0)
+collision_mask = 0
+sync_to_physics = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Pivot/DoorBody" unique_id=211140995]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+shape = SubResource("BoxShape3D_door")
+
+[node name="DoorMesh" type="MeshInstance3D" parent="Pivot/DoorBody" unique_id=1996065303]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+mesh = SubResource("BoxMesh_door")
+surface_material_override/0 = SubResource("StandardMaterial3D_door")

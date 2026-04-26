@@ -1,0 +1,50 @@
+[gd_scene load_steps=5 format=3 uid="uid://c8x5y3v2h1kqm"]
+
+[ext_resource type="Script" uid="uid://ri60uk2aylhb" path="res://scripts/player/player_controller.gd" id="1_player"]
+[ext_resource type="Script" uid="uid://bsxfdltyr2el4" path="res://scripts/player/player_camera.gd" id="2_camera"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 0.3
+height = 1.8
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_1"]
+radius = 0.3
+height = 1.8
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ceiling"]
+size = Vector3(0.5, 0.1, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1"]
+albedo_color = Color(0.2, 0.6, 1, 1)
+
+[node name="Player" type="CharacterBody3D" unique_id=2034620249]
+script = ExtResource("1_player")
+_head_height_normal = 1.5
+_head_height_crouch = 1.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=768087882]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="Head" type="Node3D" parent="." unique_id=696411212]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5294954, 0)
+script = ExtResource("2_camera")
+
+[node name="Camera3D" type="Camera3D" parent="Head" unique_id=1055958610]
+current = true
+
+[node name="InteractionRay" type="RayCast3D" parent="Head" unique_id=43873549]
+target_position = Vector3(0, 0, -2.5)
+collision_mask = 1
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=770112400]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("CapsuleMesh_1")
+surface_material_override/0 = SubResource("StandardMaterial3D_1")
+
+[node name="CeilingCheck" type="ShapeCast3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, 0)
+shape = SubResource("BoxShape3D_ceiling")
+target_position = Vector3(0, 0.2, 0)
+collision_mask = 1
+max_results = 1
