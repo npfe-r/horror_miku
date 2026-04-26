@@ -25,6 +25,10 @@ const NOISE_STATIONARY: float = 0.0
 const NOISE_JUMP: float = 3.5
 const NOISE_LAND: float = 3.0
 
+const NOISE_EMIT_INTERVAL_WALK: float = 0.5
+const NOISE_EMIT_INTERVAL_RUN: float = 0.3
+const NOISE_EMIT_INTERVAL_CROUCH: float = 0.8
+
 @export var mouse_sensitivity: float = MOUSE_SENSITIVITY
 
 var stamina: float = STAMINA_MAX
@@ -46,6 +50,7 @@ const COLLISION_HEIGHT_CROUCH: float = 1.0
 var _target_head_height: float = HEAD_HEIGHT_NORMAL
 var _target_collision_height: float = COLLISION_HEIGHT_NORMAL
 var _can_stand_up: bool = true
+var _noise_emit_timer: float = 0.0
 
 var _current_interactable: Node = null
 var _previous_interactable: Node = null
@@ -81,7 +86,7 @@ func _physics_process(delta: float) -> void:
 	_handle_movement(delta)
 	_handle_crouch()
 	_handle_stamina(delta)
-	_update_noise_level()
+	_update_noise_level(delta)
 	_smooth_crouch_transition(delta)
 	_check_interaction()
 	_handle_interaction_input()
@@ -173,11 +178,12 @@ func _handle_stamina(delta: float) -> void:
 		stamina = min(stamina, STAMINA_MAX)
 		emit_signal("stamina_changed", stamina)
 
-func _update_noise_level() -> void:
+func _update_noise_level(delta: float) -> void:
 	var previous_noise := noise_level
 	
 	if velocity.length() < 0.1:
 		noise_level = NOISE_STATIONARY
+		_noise_emit_timer = 0.0
 	elif is_crouching:
 		noise_level = NOISE_CROUCH
 	elif is_running:
@@ -185,8 +191,17 @@ func _update_noise_level() -> void:
 	else:
 		noise_level = NOISE_WALK
 	
-	if noise_level > NOISE_STATIONARY and noise_level != previous_noise:
-		emit_signal("noise_made", noise_level, global_position)
+	if noise_level > NOISE_STATIONARY:
+		var emit_interval: float = NOISE_EMIT_INTERVAL_WALK
+		if is_running:
+			emit_interval = NOISE_EMIT_INTERVAL_RUN
+		elif is_crouching:
+			emit_interval = NOISE_EMIT_INTERVAL_CROUCH
+		
+		_noise_emit_timer += delta
+		if _noise_emit_timer >= emit_interval:
+			emit_signal("noise_made", noise_level, global_position)
+			_noise_emit_timer = 0.0
 
 func make_noise(level: float) -> void:
 	emit_signal("noise_made", level, global_position)

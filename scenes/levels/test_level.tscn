@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://scenes/objects/test_pickup_item.tscn" id="5_pickup"]
 [ext_resource type="Resource" path="res://resources/items/noise_lure.tres" id="6_hfwtw"]
 [ext_resource type="Resource" path="res://resources/items/classroom_key.tres" id="7_2mu0v"]
+[ext_resource type="PackedScene" uid="uid://c8ym5k3j7xmqv" path="res://scenes/enemies/monster.tscn" id="9_monster"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_floor"]
 size = Vector3(20, 0.1, 20)
@@ -230,6 +231,26 @@ item_data = ExtResource("6_hfwtw")
 [node name="TestPickupItem3" parent="Interactables" unique_id=1280492985 instance=ExtResource("5_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8743844, 0.25000018, 2.205077)
 item_data = ExtResource("7_2mu0v")
+
+[node name="Enemies" type="Node3D" parent="." unique_id=111222333]
+
+[node name="PatrolPoints" type="Node3D" parent="Enemies" unique_id=222333444]
+
+[node name="PatrolPoint1" type="Node3D" parent="Enemies/PatrolPoints" unique_id=333444555]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -6)
+
+[node name="PatrolPoint2" type="Node3D" parent="Enemies/PatrolPoints" unique_id=444555666]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -6)
+
+[node name="PatrolPoint3" type="Node3D" parent="Enemies/PatrolPoints" unique_id=555666777]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 6)
+
+[node name="PatrolPoint4" type="Node3D" parent="Enemies/PatrolPoints" unique_id=666777888]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 6)
+
+[node name="Monster" parent="Enemies" unique_id=777888999 instance=ExtResource("9_monster")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -6)
+patrol_points = [NodePath("../PatrolPoints/PatrolPoint1"), NodePath("../PatrolPoints/PatrolPoint2"), NodePath("../PatrolPoints/PatrolPoint3"), NodePath("../PatrolPoints/PatrolPoint4")]
 
 [node name="DebugUI" parent="." unique_id=1001097700 instance=ExtResource("2_ui")]
 

@@ -1,0 +1,6 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://dqm3k5n8yhp2v"]
+
+[resource]
+resource_name = "MonsterMaterial"
+albedo_color = Color(1, 0.2, 0.2, 1)
+roughness = 0.7
