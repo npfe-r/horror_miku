@@ -56,6 +56,42 @@ albedo_color = Color(0.3, 0.7, 0.3, 1)
 [sub_resource type="BoxShape3D" id="BoxShape3D_platform"]
 size = Vector3(2, 0.2, 2)
 
+[sub_resource type="NavigationMesh" id="NavigationMesh_1"]
+vertices = PackedVector3Array(-15, 0.05, -15, -15, 0.05, 15, 15, 0.05, 15, 15, 0.05, -15, -3, 0.05, -3, -3, 0.05, 3, 3, 0.05, 3, 3, 0.05, -3, -8, 0.05, -8, -8, 0.05, -4, -4, 0.05, -4, -4, 0.05, -8, 8, 0.05, 4, 8, 0.05, 8, 4, 0.05, 8, 4, 0.05, 4, -8, 0.05, 4, -4, 0.05, 8, -4, 0.05, 4, -8, 0.05, 8)
+polygons = [PackedInt32Array(4, 5, 1, 0), PackedInt32Array(5, 6, 2, 1), PackedInt32Array(6, 7, 3, 2), PackedInt32Array(7, 4, 0, 3), PackedInt32Array(8, 9, 10, 11), PackedInt32Array(12, 13, 14, 15), PackedInt32Array(16, 17, 18, 19)]
+cell_size = 0.25
+cell_height = 0.2
+agent_radius = 0.5
+agent_height = 1.8
+agent_max_climb = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_test_floor"]
+size = Vector3(30, 0.1, 30)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_test_floor"]
+albedo_color = Color(0.35, 0.35, 0.4, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_test_floor"]
+size = Vector3(30, 0.1, 30)
+
+[sub_resource type="BoxMesh" id="BoxMesh_test_wall"]
+size = Vector3(30, 3, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_test_wall"]
+albedo_color = Color(0.5, 0.5, 0.55, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_test_wall"]
+size = Vector3(30, 3, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_nav_obstacle"]
+size = Vector3(2, 2.5, 2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nav_obstacle"]
+albedo_color = Color(0.7, 0.5, 0.2, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_nav_obstacle"]
+size = Vector3(2, 2.5, 2)
+
 [sub_resource type="Environment" id="Environment_1"]
 background_mode = 1
 background_color = Color(0.1, 0.1, 0.15, 1)
@@ -69,6 +105,124 @@ ambient_light_energy = 0.5
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
 [node name="Environment" type="Node3D" parent="." unique_id=303441784]
+
+[node name="EnemyTestArea" type="Node3D" parent="Environment" unique_id=888999000]
+
+[node name="Floor" type="StaticBody3D" parent="Environment/EnemyTestArea" unique_id=999000111]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, 0)
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Environment/EnemyTestArea/Floor" unique_id=000111222]
+mesh = SubResource("BoxMesh_test_floor")
+surface_material_override/0 = SubResource("StandardMaterial3D_test_floor")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Environment/EnemyTestArea/Floor" unique_id=111222333]
+shape = SubResource("BoxShape3D_test_floor")
+
+[node name="WallNorth" type="StaticBody3D" parent="Environment/EnemyTestArea" unique_id=222333444]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 1.5, -15)
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Environment/EnemyTestArea/WallNorth" unique_id=333444555]
+mesh = SubResource("BoxMesh_test_wall")
+surface_material_override/0 = SubResource("StandardMaterial3D_test_wall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Environment/EnemyTestArea/WallNorth" unique_id=444555666]
+shape = SubResource("BoxShape3D_test_wall")
+
+[node name="WallSouth" type="StaticBody3D" parent="Environment/EnemyTestArea" unique_id=555666777]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 1.5, 15)
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Environment/EnemyTestArea/WallSouth" unique_id=666777888]
+mesh = SubResource("BoxMesh_test_wall")
+surface_material_override/0 = SubResource("StandardMaterial3D_test_wall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Environment/EnemyTestArea/WallSouth" unique_id=777888999]
+shape = SubResource("BoxShape3D_test_wall")
+
+[node name="WallEast" type="StaticBody3D" parent="Environment/EnemyTestArea" unique_id=888999000]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 40, 1.5, 0)
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Environment/EnemyTestArea/WallEast" unique_id=999000111]
+mesh = SubResource("BoxMesh_test_wall")
+surface_material_override/0 = SubResource("StandardMaterial3D_test_wall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Environment/EnemyTestArea/WallEast" unique_id=000111222]
+shape = SubResource("BoxShape3D_test_wall")
+
+[node name="WallWest" type="StaticBody3D" parent="Environment/EnemyTestArea" unique_id=111222333]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 10, 1.5, 0)
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Environment/EnemyTestArea/WallWest" unique_id=222333444]
+mesh = SubResource("BoxMesh_test_wall")
+surface_material_override/0 = SubResource("StandardMaterial3D_test_wall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Environment/EnemyTestArea/WallWest" unique_id=333444555]
+shape = SubResource("BoxShape3D_test_wall")
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="Environment/EnemyTestArea" unique_id=444555666]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, 0)
+navigation_mesh = SubResource("NavigationMesh_1")
+
+[node name="Obstacles" type="Node3D" parent="Environment/EnemyTestArea" unique_id=555666777]
+
+[node name="Obstacle1" type="StaticBody3D" parent="Environment/EnemyTestArea/Obstacles" unique_id=666777888]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1.25, -5)
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Environment/EnemyTestArea/Obstacles/Obstacle1" unique_id=777888999]
+mesh = SubResource("BoxMesh_nav_obstacle")
+surface_material_override/0 = SubResource("StandardMaterial3D_nav_obstacle")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Environment/EnemyTestArea/Obstacles/Obstacle1" unique_id=888999000]
+shape = SubResource("BoxShape3D_nav_obstacle")
+
+[node name="Obstacle2" type="StaticBody3D" parent="Environment/EnemyTestArea/Obstacles" unique_id=999000111]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 1.25, 5)
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Environment/EnemyTestArea/Obstacles/Obstacle2" unique_id=000111222]
+mesh = SubResource("BoxMesh_nav_obstacle")
+surface_material_override/0 = SubResource("StandardMaterial3D_nav_obstacle")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Environment/EnemyTestArea/Obstacles/Obstacle2" unique_id=111222333]
+shape = SubResource("BoxShape3D_nav_obstacle")
+
+[node name="Obstacle3" type="StaticBody3D" parent="Environment/EnemyTestArea/Obstacles" unique_id=222333444]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 1.25, 0)
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Environment/EnemyTestArea/Obstacles/Obstacle3" unique_id=333444555]
+mesh = SubResource("BoxMesh_nav_obstacle")
+surface_material_override/0 = SubResource("StandardMaterial3D_nav_obstacle")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Environment/EnemyTestArea/Obstacles/Obstacle3" unique_id=444555666]
+shape = SubResource("BoxShape3D_nav_obstacle")
+
+[node name="Obstacle4" type="StaticBody3D" parent="Environment/EnemyTestArea/Obstacles" unique_id=555666777]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 1.25, -8)
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Environment/EnemyTestArea/Obstacles/Obstacle4" unique_id=666777888]
+mesh = SubResource("BoxMesh_nav_obstacle")
+surface_material_override/0 = SubResource("StandardMaterial3D_nav_obstacle")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Environment/EnemyTestArea/Obstacles/Obstacle4" unique_id=777888999]
+shape = SubResource("BoxShape3D_nav_obstacle")
+
+[node name="Obstacle5" type="StaticBody3D" parent="Environment/EnemyTestArea/Obstacles" unique_id=888999000]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 1.25, 8)
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Environment/EnemyTestArea/Obstacles/Obstacle5" unique_id=999000111]
+mesh = SubResource("BoxMesh_nav_obstacle")
+surface_material_override/0 = SubResource("StandardMaterial3D_nav_obstacle")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Environment/EnemyTestArea/Obstacles/Obstacle5" unique_id=000111222]
+shape = SubResource("BoxShape3D_nav_obstacle")
 
 [node name="Floor" type="StaticBody3D" parent="Environment" unique_id=1000154791]
 collision_mask = 0
@@ -237,19 +391,19 @@ item_data = ExtResource("7_2mu0v")
 [node name="PatrolPoints" type="Node3D" parent="Enemies" unique_id=222333444]
 
 [node name="PatrolPoint1" type="Node3D" parent="Enemies/PatrolPoints" unique_id=333444555]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0, -10)
 
 [node name="PatrolPoint2" type="Node3D" parent="Enemies/PatrolPoints" unique_id=444555666]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 0, -10)
 
 [node name="PatrolPoint3" type="Node3D" parent="Enemies/PatrolPoints" unique_id=555666777]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 0, 10)
 
 [node name="PatrolPoint4" type="Node3D" parent="Enemies/PatrolPoints" unique_id=666777888]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0, 10)
 
 [node name="Monster" parent="Enemies" unique_id=777888999 instance=ExtResource("9_monster")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0, -10)
 patrol_points = [NodePath("../PatrolPoints/PatrolPoint1"), NodePath("../PatrolPoints/PatrolPoint2"), NodePath("../PatrolPoints/PatrolPoint3"), NodePath("../PatrolPoints/PatrolPoint4")]
 
 [node name="DebugUI" parent="." unique_id=1001097700 instance=ExtResource("2_ui")]
