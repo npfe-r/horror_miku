@@ -252,10 +252,16 @@ func _handle_interaction_input() -> void:
 		if _current_interactable and _current_interactable.has_method(&"can_interact"):
 			var can_interact_result: bool = _current_interactable.call(&"can_interact")
 			if can_interact_result and _current_interactable.has_method(&"interact"):
-				_current_interactable.call(&"interact")
+				var should_clear: bool = true
+				var result = _current_interactable.call(&"interact")
+				if result is bool:
+					should_clear = result
+				else:
+					should_clear = true
 				
-				if _current_interactable and _current_interactable.has_method(&"set_highlight"):
-					_current_interactable.call(&"set_highlight", false)
-				_current_interactable = null
-				_previous_interactable = null
-				emit_signal("interaction_prompt_changed", "")
+				if should_clear:
+					if _current_interactable and _current_interactable.has_method(&"set_highlight"):
+						_current_interactable.call(&"set_highlight", false)
+					_current_interactable = null
+					_previous_interactable = null
+					emit_signal("interaction_prompt_changed", "")
