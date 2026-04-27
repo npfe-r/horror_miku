@@ -50,7 +50,7 @@ func _process(_delta: float) -> void:
 	_update_state_display()
 	_update_monster_display()
 
-func _on_noise_made(noise_level: float, _position: Vector3) -> void:
+func _on_noise_made(noise_level: float, _position: Vector3, _max_range: float) -> void:
 	if noise_label:
 		noise_label.text = "噪音等级: %.1f" % noise_level
 		await get_tree().create_timer(0.5).timeout
@@ -174,9 +174,17 @@ func _update_monster_display() -> void:
 	
 	var speed := Vector2(monster.velocity.x, monster.velocity.z).length()
 	var distance := ""
+	var alertness_bar := ""
 	
 	if player:
 		var dist_to_player := monster.global_position.distance_to(player.global_position)
 		distance = " | 距离: %.1fm" % dist_to_player
 	
-	monster_label.text = "敌人状态: %s\n速度: %.2f m/s%s" % [monster.get_state_name(), speed, distance]
+	# 警觉值进度条
+	var alertness_percent := monster.get_alertness_percent()
+	var bar_length := 20
+	var filled := int(alertness_percent * bar_length)
+	var empty := bar_length - filled
+	alertness_bar = "\n警觉: [%s%s] %.0f%%" % ["█".repeat(filled), "░".repeat(empty), alertness_percent * 100]
+	
+	monster_label.text = "敌人状态: %s\n速度: %.2f m/s%s%s" % [monster.get_state_name(), speed, distance, alertness_bar]

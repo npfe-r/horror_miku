@@ -20,6 +20,13 @@ albedo_color = Color(0.35, 0.35, 0.4, 1)
 [sub_resource type="BoxShape3D" id="BoxShape3D_test_floor"]
 size = Vector3(30, 0.1, 30)
 
+[sub_resource type="NavigationMesh" id="NavigationMesh_1"]
+vertices = PackedVector3Array(-14.3, 0.35000002, -4.8, -6.55, 0.35000002, -4.8, -6.55, 0.35000002, -6.3, -4.8, 0.35000002, -6.55, -4.8, 0.35000002, -14.3, -14.3, 0.35000002, -14.3, -3.3000002, 0.35000002, -3.8000002, -1.0500002, 0.35000002, -1.5500002, 1.1999998, 0.35000002, -1.5500002, -3.3000002, 0.35000002, -6.3, 8.45, 0.35000002, -9.3, 10.2, 0.35000002, -9.55, 9.95, 0.35000002, -14.3, 8.45, 0.35000002, -6.8, 11.7, 0.35000002, -9.3, 11.7, 0.35000002, -7.8, 14.45, 0.35000002, -7.8, 14.45, 0.35000002, -14.3, 9.45, 2.7500002, -8.55, 9.45, 2.7500002, -7.3, 10.7, 2.7500002, -7.3, 10.7, 2.7500002, -8.55, 9.7, 0.35000002, -8.3, 9.7, 0.35000002, -7.55, 10.45, 0.35000002, -7.55, 10.45, 0.35000002, -8.3, 11.45, 0.35000002, -6.3, 1.6999998, 0.35000002, -1.3000002, 1.4499998, 0.35000002, 1.6999998, 3.4499998, 0.35000002, 3.6999998, 6.45, 0.35000002, 3.4499998, 8.7, 0.35000002, -6.3, 6.7, 0.35000002, 4.95, 14.45, 0.35000002, 4.95, -5.55, 2.7500002, -5.55, -5.55, 2.7500002, -4.3, -4.3, 2.7500002, -4.3, -4.3, 2.7500002, -5.55, -5.3, 0.35000002, -5.3, -5.3, 0.35000002, -4.55, -4.55, 0.35000002, -4.55, -4.55, 0.35000002, -5.3, -1.5500002, 0.35000002, -1.3000002, -3.5500002, 0.35000002, -3.3000002, -6.3, 0.35000002, -3.3000002, -14.3, 0.35000002, 7.95, -11.3, 0.35000002, 6.45, -11.55, 0.35000002, 7.95, -1.5500002, 0.35000002, 1.4499998, -8.55, 0.35000002, 6.45, -8.3, 0.35000002, 6.95, -1.0500002, 0.35000002, 1.6999998, -0.5500002, 2.7500002, -0.5500002, -0.5500002, 2.7500002, 0.6999998, 0.6999998, 2.7500002, 0.6999998, 0.6999998, 2.7500002, -0.5500002, -0.3000002, 0.35000002, -0.3000002, -0.3000002, 0.35000002, 0.4499998, 0.4499998, 0.35000002, 0.4499998, 0.4499998, 0.35000002, -0.3000002, -8.3, 0.35000002, 9.45, -8.8, 0.35000002, 9.7, -8.8, 0.35000002, 14.2, 3.4499998, 0.35000002, 6.45, 4.95, 0.35000002, 14.2, 4.95, 0.35000002, 6.7, 4.45, 2.7500002, 4.45, 4.45, 2.7500002, 5.7, 5.7, 2.7500002, 5.7, 5.7, 2.7500002, 4.45, 4.7, 0.35000002, 4.7, 4.7, 0.35000002, 5.45, 5.45, 0.35000002, 5.45, 5.45, 0.35000002, 4.7, 6.45, 0.35000002, 6.7, 14.45, 0.35000002, 14.2, -10.55, 2.7500002, 7.45, -10.55, 2.7500002, 8.7, -9.3, 2.7500002, 8.7, -9.3, 2.7500002, 7.45, -10.3, 0.35000002, 7.7, -10.3, 0.35000002, 8.45, -9.55, 0.35000002, 8.45, -9.55, 0.35000002, 7.7, -11.3, 0.35000002, 9.7, -14.3, 0.35000002, 14.2)
+polygons = [PackedInt32Array(2, 1, 0), PackedInt32Array(4, 3, 2), PackedInt32Array(0, 5, 2), PackedInt32Array(2, 5, 4), PackedInt32Array(7, 6, 8), PackedInt32Array(8, 6, 9), PackedInt32Array(12, 11, 10), PackedInt32Array(9, 4, 8), PackedInt32Array(8, 4, 10), PackedInt32Array(10, 4, 12), PackedInt32Array(9, 3, 4), PackedInt32Array(10, 13, 8), PackedInt32Array(16, 15, 14), PackedInt32Array(14, 11, 12), PackedInt32Array(16, 14, 17), PackedInt32Array(17, 14, 12), PackedInt32Array(21, 20, 18), PackedInt32Array(18, 20, 19), PackedInt32Array(25, 24, 22), PackedInt32Array(22, 24, 23), PackedInt32Array(26, 15, 16), PackedInt32Array(28, 27, 29), PackedInt32Array(29, 27, 30), PackedInt32Array(30, 27, 31), PackedInt32Array(30, 31, 26), PackedInt32Array(31, 27, 13), PackedInt32Array(13, 27, 8), PackedInt32Array(32, 30, 33), PackedInt32Array(33, 30, 26), PackedInt32Array(33, 26, 16), PackedInt32Array(37, 36, 34), PackedInt32Array(34, 36, 35), PackedInt32Array(41, 40, 38), PackedInt32Array(38, 40, 39), PackedInt32Array(43, 6, 42), PackedInt32Array(42, 6, 7), PackedInt32Array(1, 44, 0), PackedInt32Array(0, 44, 46), PackedInt32Array(0, 46, 45), PackedInt32Array(46, 47, 45), PackedInt32Array(42, 48, 43), PackedInt32Array(43, 48, 44), PackedInt32Array(44, 48, 49), PackedInt32Array(44, 49, 46), PackedInt32Array(49, 48, 50), PackedInt32Array(50, 48, 51), PackedInt32Array(55, 54, 52), PackedInt32Array(52, 54, 53), PackedInt32Array(59, 58, 56), PackedInt32Array(56, 58, 57), PackedInt32Array(62, 61, 60), PackedInt32Array(28, 29, 51), PackedInt32Array(51, 29, 63), PackedInt32Array(63, 64, 51), PackedInt32Array(51, 64, 60), PackedInt32Array(60, 64, 62), PackedInt32Array(63, 65, 64), PackedInt32Array(60, 50, 51), PackedInt32Array(69, 68, 66), PackedInt32Array(66, 68, 67), PackedInt32Array(73, 72, 70), PackedInt32Array(70, 72, 71), PackedInt32Array(64, 65, 74), PackedInt32Array(74, 32, 33), PackedInt32Array(64, 74, 75), PackedInt32Array(75, 74, 33), PackedInt32Array(79, 78, 76), PackedInt32Array(76, 78, 77), PackedInt32Array(83, 82, 80), PackedInt32Array(80, 82, 81), PackedInt32Array(45, 47, 84), PackedInt32Array(84, 61, 62), PackedInt32Array(45, 84, 85), PackedInt32Array(85, 84, 62)]
+cell_height = 0.2
+agent_height = 1.8
+agent_max_climb = 0.9
+
 [sub_resource type="BoxMesh" id="BoxMesh_test_wall"]
 size = Vector3(30, 3, 0.1)
 
@@ -28,13 +35,6 @@ albedo_color = Color(0.5, 0.5, 0.55, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_test_wall"]
 size = Vector3(30, 3, 0.1)
-
-[sub_resource type="NavigationMesh" id="NavigationMesh_1"]
-vertices = PackedVector3Array(-15, 0.05, -15, -15, 0.05, 15, 15, 0.05, 15, 15, 0.05, -15, -3, 0.05, -3, -3, 0.05, 3, 3, 0.05, 3, 3, 0.05, -3, -8, 0.05, -8, -8, 0.05, -4, -4, 0.05, -4, -4, 0.05, -8, 8, 0.05, 4, 8, 0.05, 8, 4, 0.05, 8, 4, 0.05, 4, -8, 0.05, 4, -4, 0.05, 8, -4, 0.05, 4, -8, 0.05, 8)
-polygons = [PackedInt32Array(4, 5, 1, 0), PackedInt32Array(5, 6, 2, 1), PackedInt32Array(6, 7, 3, 2), PackedInt32Array(7, 4, 0, 3), PackedInt32Array(8, 9, 10, 11), PackedInt32Array(12, 13, 14, 15), PackedInt32Array(16, 17, 18, 19)]
-cell_height = 0.2
-agent_height = 1.8
-agent_max_climb = 0.9
 
 [sub_resource type="BoxMesh" id="BoxMesh_nav_obstacle"]
 size = Vector3(2, 2.5, 2)
@@ -117,6 +117,10 @@ surface_material_override/0 = SubResource("StandardMaterial3D_test_floor")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Environment/EnemyTestArea/Floor" unique_id=111222333]
 shape = SubResource("BoxShape3D_test_floor")
 
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="Environment/EnemyTestArea" unique_id=228684372]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, 0)
+navigation_mesh = SubResource("NavigationMesh_1")
+
 [node name="WallNorth" type="StaticBody3D" parent="Environment/EnemyTestArea" unique_id=222333444]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 1.5, -15)
 collision_mask = 0
@@ -160,10 +164,6 @@ surface_material_override/0 = SubResource("StandardMaterial3D_test_wall")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Environment/EnemyTestArea/WallWest" unique_id=2076938446]
 shape = SubResource("BoxShape3D_test_wall")
-
-[node name="NavigationRegion3D" type="NavigationRegion3D" parent="Environment/EnemyTestArea" unique_id=228684372]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, 0)
-navigation_mesh = SubResource("NavigationMesh_1")
 
 [node name="Obstacles" type="Node3D" parent="Environment/EnemyTestArea" unique_id=1517193581]
 
@@ -424,9 +424,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0, 10)
 
 [node name="Monster" parent="Enemies" unique_id=1205255205 instance=ExtResource("9_monster")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0, -10)
-patrol_speed = 8.0
-chase_speed = 20.0
-patrol_points = Array[NodePath]([NodePath("../PatrolPoints/PatrolPoint1"), NodePath("../PatrolPoints/PatrolPoint2"), NodePath("../PatrolPoints/PatrolPoint3"), NodePath("../PatrolPoints/PatrolPoint4")])
+sight_angle = 90.0
 
 [node name="DebugUI" parent="." unique_id=1001097700 instance=ExtResource("2_ui")]
 

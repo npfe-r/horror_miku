@@ -1,7 +1,8 @@
 class_name PlayerController
 extends CharacterBody3D
 
-signal noise_made(noise_level: float, position: Vector3)
+## 噪音信号，传递噪音等级、位置和最大传播距离
+signal noise_made(noise_level: float, position: Vector3, max_range: float)
 signal stamina_changed(stamina: float)
 signal interaction_prompt_changed(prompt_text: String)
 signal item_picked_up(item: ItemData, count: int)
@@ -24,6 +25,13 @@ const NOISE_CROUCH: float = 1.0
 const NOISE_STATIONARY: float = 0.0
 const NOISE_JUMP: float = 3.5
 const NOISE_LAND: float = 3.0
+
+## 噪音最大传播距离
+const NOISE_MAX_RANGE_WALK: float = 16.0
+const NOISE_MAX_RANGE_RUN: float = 24.0
+const NOISE_MAX_RANGE_CROUCH: float = 8.0
+const NOISE_MAX_RANGE_JUMP: float = 28.0
+const NOISE_MAX_RANGE_LAND: float = 24.0
 
 const NOISE_EMIT_INTERVAL_WALK: float = 0.5
 const NOISE_EMIT_INTERVAL_RUN: float = 0.3
@@ -106,7 +114,7 @@ func _handle_movement(delta: float) -> void:
 	if Input.is_action_just_pressed("jump") and is_on_floor() and not is_crouching:
 		velocity.y = JUMP_VELOCITY
 		is_jumping = true
-		make_noise(NOISE_JUMP)
+		make_noise(NOISE_JUMP, NOISE_MAX_RANGE_JUMP)
 	
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
 	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
@@ -146,7 +154,7 @@ func _check_ceiling_clearance() -> void:
 
 func _check_landing() -> void:
 	if not was_on_floor and is_on_floor():
-		make_noise(NOISE_LAND)
+		make_noise(NOISE_LAND, NOISE_MAX_RANGE_LAND)
 
 func _update_crouch_state() -> void:
 	if is_crouching:
@@ -193,18 +201,24 @@ func _update_noise_level(delta: float) -> void:
 	
 	if noise_level > NOISE_STATIONARY:
 		var emit_interval: float = NOISE_EMIT_INTERVAL_WALK
+		var max_range: float = NOISE_MAX_RANGE_WALK
+		
 		if is_running:
 			emit_interval = NOISE_EMIT_INTERVAL_RUN
+			max_range = NOISE_MAX_RANGE_RUN
 		elif is_crouching:
 			emit_interval = NOISE_EMIT_INTERVAL_CROUCH
+			max_range = NOISE_MAX_RANGE_CROUCH
 		
 		_noise_emit_timer += delta
 		if _noise_emit_timer >= emit_interval:
-			emit_signal("noise_made", noise_level, global_position)
+			emit_signal("noise_made", noise_level, global_position, max_range)
 			_noise_emit_timer = 0.0
 
-func make_noise(level: float) -> void:
-	emit_signal("noise_made", level, global_position)
+func make_noise(level: float, max_range: float = -1.0) -> void:
+	if max_range < 0.0:
+		max_range = level * 8.0
+	emit_signal("noise_made", level, global_position, max_range)
 
 func set_hiding(hiding: bool) -> void:
 	is_hiding = hiding
