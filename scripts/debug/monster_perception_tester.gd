@@ -60,6 +60,6 @@ func _test_monster_hearing() -> void:
 	
 	if player.has_signal("noise_made"):
 		print("玩家有noise_made信号，正在发送测试噪音...")
-		player.emit_signal("noise_made", 3.0, player.global_position)
+		EventBus.noise_made.emit(3.0, player.global_position, 24.0)
 	else:
 		print("[错误] 玩家没有noise_made信号")

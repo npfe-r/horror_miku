@@ -1,4 +1,4 @@
-class_name TestSwitch
+class_name Switch
 extends InteractableObject
 
 @export var is_on: bool = false

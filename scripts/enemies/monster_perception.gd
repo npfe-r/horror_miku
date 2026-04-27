@@ -54,23 +54,17 @@ func _ready() -> void:
 ## 设置玩家引用
 func _setup_player_reference() -> void:
 	await get_tree().physics_frame
-	
+
 	var players := get_tree().get_nodes_in_group("player")
 	if players.size() > 0:
 		_player_ref = weakref(players[0])
 		print("[MonsterPerception] 找到玩家引用: %s" % players[0].name)
-		_connect_player_noise_signal()
 	else:
-		push_warning("[MonsterPerception] 未找到玩家，将在1秒后重试")
-		await get_tree().create_timer(1.0).timeout
-		_setup_player_reference()
+		push_warning("[MonsterPerception] 未找到玩家")
 
-## 连接玩家噪音信号
-func _connect_player_noise_signal() -> void:
-	var player := _get_player()
-	if player and player.has_signal("noise_made"):
-		player.noise_made.connect(_on_player_noise_made)
-		print("[MonsterPerception] 已连接玩家噪音信号")
+	# 通过 EventBus 监听噪音，无需直连玩家信号
+	if not EventBus.noise_made.is_connected(_on_noise_made):
+		EventBus.noise_made.connect(_on_noise_made)
 
 ## 处理函数
 func _process(delta: float) -> void:
@@ -140,7 +134,7 @@ func _check_vision() -> void:
 ## noise_level: 噪音等级
 ## noise_position: 噪音位置
 ## max_range: 最大传播距离（可选，默认为噪音等级*8）
-func _on_player_noise_made(noise_level: float, noise_position: Vector3, max_range: float = -1.0) -> void:
+func _on_noise_made(noise_level: float, noise_position: Vector3, max_range: float = -1.0) -> void:
 	if noise_level < noise_threshold:
 		return
 	

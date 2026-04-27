@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://pickup_test_001"]
 
-[ext_resource type="Script" path="res://scripts/objects/test_pickup_item.gd" id="1_pickup"]
+[ext_resource type="Script" path="res://scripts/objects/pickup_item.gd" id="1_pickup"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_item"]
 radius = 0.2
@@ -18,9 +18,6 @@ radius = 0.2
 collision_layer = 1
 collision_mask = 0
 script = ExtResource("1_pickup")
-item_name = "金币"
-item_description = "闪亮的金币，似乎很有价值"
-pickup_message = "拾取了 %s！"
 
 [node name="ItemMesh" type="MeshInstance3D" parent="."]
 mesh = SubResource("SphereMesh_item")

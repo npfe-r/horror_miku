@@ -1,4 +1,4 @@
-class_name TestPickupItem
+class_name PickupItem
 extends InteractableObject
 
 @export var item_data: ItemData

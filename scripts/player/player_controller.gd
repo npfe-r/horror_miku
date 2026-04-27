@@ -60,9 +60,6 @@ var _target_collision_height: float = COLLISION_HEIGHT_NORMAL
 var _can_stand_up: bool = true
 var _noise_emit_timer: float = 0.0
 
-var _current_interactable: Node = null
-var _previous_interactable: Node = null
-
 var inventory: Inventory = null
 
 @onready var head: Node3D = $Head
@@ -78,7 +75,6 @@ func _ready() -> void:
 	head.position.y = HEAD_HEIGHT_NORMAL
 	
 	_setup_inventory()
-	_setup_interaction_manager()
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
@@ -180,11 +176,11 @@ func _handle_stamina(delta: float) -> void:
 	if is_running and velocity.length() > 0.1:
 		stamina -= STAMINA_DRAIN_RATE * delta
 		stamina = max(stamina, 0.0)
-		emit_signal("stamina_changed", stamina)
+		EventBus.stamina_changed.emit(stamina)
 	elif not is_running:
 		stamina += STAMINA_RECOVERY_RATE * delta
 		stamina = min(stamina, STAMINA_MAX)
-		emit_signal("stamina_changed", stamina)
+		EventBus.stamina_changed.emit(stamina)
 
 func _update_noise_level(delta: float) -> void:
 	var previous_noise := noise_level
@@ -212,13 +208,13 @@ func _update_noise_level(delta: float) -> void:
 		
 		_noise_emit_timer += delta
 		if _noise_emit_timer >= emit_interval:
-			emit_signal("noise_made", noise_level, global_position, max_range)
+			EventBus.noise_made.emit(noise_level, global_position, max_range)
 			_noise_emit_timer = 0.0
 
 func make_noise(level: float, max_range: float = -1.0) -> void:
 	if max_range < 0.0:
 		max_range = level * 8.0
-	emit_signal("noise_made", level, global_position, max_range)
+	EventBus.noise_made.emit(level, global_position, max_range)
 
 func set_hiding(hiding: bool) -> void:
 	is_hiding = hiding
@@ -232,69 +228,16 @@ func get_current_speed() -> float:
 		return RUN_SPEED
 	return WALK_SPEED
 
-func _setup_interaction_manager() -> void:
-	var interaction_manager := get_node_or_null("/root/InteractionManager")
-	if interaction_manager:
-		interaction_manager.set_player(self)
-
 func _check_interaction() -> void:
-	if not interaction_ray:
-		return
-	
-	interaction_ray.force_raycast_update()
-	
-	if interaction_ray.is_colliding():
-		var collider := interaction_ray.get_collider()
-		var interactable_node: Node = null
-		
-		if collider is InteractableObject:
-			interactable_node = collider as InteractableObject
-		elif collider is AnimatableBody3D:
-			var parent: Node = collider.get_parent()
-			while parent:
-				if parent.has_method(&"can_interact"):
-					interactable_node = parent
-					break
-				parent = parent.get_parent()
-		
-		if interactable_node and interactable_node.has_method(&"can_interact"):
-			var can_interact_result: bool = interactable_node.call(&"can_interact")
-			if can_interact_result:
-				_current_interactable = interactable_node
-				
-				if _previous_interactable != _current_interactable:
-					if _previous_interactable and _previous_interactable.has_method(&"set_highlight"):
-						_previous_interactable.call(&"set_highlight", false)
-					
-					if _current_interactable.has_method(&"set_highlight"):
-						_current_interactable.call(&"set_highlight", true)
-					
-					if _current_interactable.has_method(&"get_interaction_text"):
-						var prompt_text: String = _current_interactable.call(&"get_interaction_text")
-						emit_signal("interaction_prompt_changed", prompt_text)
-					
-					_previous_interactable = _current_interactable
-				return
-	
-	if _current_interactable:
-		if _current_interactable.has_method(&"set_highlight"):
-			_current_interactable.call(&"set_highlight", false)
-		_current_interactable = null
-		_previous_interactable = null
-		emit_signal("interaction_prompt_changed", "")
+	var im := get_node_or_null("/root/InteractionManager")
+	if im:
+		im.check_interaction()
 
 func _handle_interaction_input() -> void:
 	if Input.is_action_just_pressed("interact"):
-		if _current_interactable and _current_interactable.has_method(&"can_interact"):
-			var can_interact_result: bool = _current_interactable.call(&"can_interact")
-			if can_interact_result and _current_interactable.has_method(&"interact"):
-				_current_interactable.call(&"interact")
-				
-				if _current_interactable and _current_interactable.has_method(&"set_highlight"):
-					_current_interactable.call(&"set_highlight", false)
-				_current_interactable = null
-				_previous_interactable = null
-				emit_signal("interaction_prompt_changed", "")
+		var im := get_node_or_null("/root/InteractionManager")
+		if im:
+			im.try_interact()
 
 func _setup_inventory() -> void:
 	inventory = Inventory.new()

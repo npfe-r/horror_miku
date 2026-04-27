@@ -1,5 +1,5 @@
 class_name ItemSlot
-extends RefCounted
+extends Resource
 
 var item_data: ItemData = null
 var count: int = 0

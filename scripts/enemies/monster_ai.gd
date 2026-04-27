@@ -28,7 +28,7 @@ enum State {
 ## 警觉时的移动速度（米/秒）
 @export var alert_speed: float = 3.0
 ## 追击时的移动速度（米/秒），略快于玩家奔跑速度
-@export var chase_speed: float = 5.5
+@export var chase_speed: float = 6.5
 ## 加速度（米/秒²），控制敌人加速到目标速度的快慢
 @export var acceleration: float = 15.0
 ## 减速度（米/秒²），控制敌人减速停止的快慢
@@ -352,6 +352,7 @@ func _process_chase(delta: float) -> void:
 		# 检查是否抓到玩家
 		if global_position.distance_to(player.global_position) < 1.5:
 			emit_signal("player_caught")
+			EventBus.player_caught.emit()
 			print("[MonsterAI] 抓住玩家！")
 	else:
 		# 看不到玩家，追击至最后位置附近
@@ -506,12 +507,14 @@ func change_state(new_state: State) -> void:
 			path_update_timer = 0.0
 			# 发送检测到玩家信号
 			emit_signal("player_detected", last_known_player_position)
+			EventBus.monster_detected_player.emit(last_known_player_position)
 			# 设置追击目标
 			if navigation_agent:
 				navigation_agent.set_target_position(last_known_player_position)
 	
 	# 发送状态改变信号
 	emit_signal("state_changed", State.keys()[new_state])
+	EventBus.monster_state_changed.emit(State.keys()[new_state])
 
 ## 感知系统回调：看到玩家
 ## 当感知系统检测到玩家时调用
@@ -572,6 +575,7 @@ func _on_noise_heard(noise_position: Vector3, noise_level: float, max_range: flo
 func _on_player_lost() -> void:
 	_can_see_player = false
 	print("[MonsterAI] 丢失玩家视野")
+	EventBus.monster_lost_player.emit()
 
 ## 获取玩家节点
 ## 通过弱引用安全获取玩家节点

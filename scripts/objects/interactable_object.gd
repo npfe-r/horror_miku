@@ -5,14 +5,13 @@ extends AnimatableBody3D
 @export var highlight_color: Color = Color(1.0, 1.0, 0.5, 1.0)
 @export var is_enabled: bool = true
 
-var _original_materials: Dictionary = {}
-var _is_highlighted: bool = false
+var highlight: HighlightComponent = null
 
 @onready var mesh_instances: Array[MeshInstance3D] = []
 
 func _ready() -> void:
+	highlight = HighlightComponent.new()
 	_find_mesh_instances()
-	_store_original_materials()
 
 func _find_mesh_instances() -> void:
 	mesh_instances.clear()
@@ -23,11 +22,6 @@ func _find_mesh_instances() -> void:
 			if subchild is MeshInstance3D:
 				mesh_instances.append(subchild)
 
-func _store_original_materials() -> void:
-	_original_materials.clear()
-	for mesh in mesh_instances:
-		_original_materials[mesh] = mesh.get_surface_override_material(0)
-
 func can_interact() -> bool:
 	return is_enabled
 
@@ -35,32 +29,13 @@ func get_interaction_text() -> String:
 	return interaction_text
 
 func interact() -> void:
-	push_warning("interact() method should be overridden in derived class")
+	push_warning("interact() should be overridden in subclass: " + name)
 
-func set_highlight(highlight: bool) -> void:
-	if _is_highlighted == highlight:
-		return
-	
-	_is_highlighted = highlight
-	
-	if highlight:
-		_apply_highlight()
+func set_highlight(on: bool) -> void:
+	if on:
+		highlight.apply(mesh_instances, highlight_color)
 	else:
-		_remove_highlight()
-
-func _apply_highlight() -> void:
-	for mesh in mesh_instances:
-		var material := StandardMaterial3D.new()
-		material.albedo_color = highlight_color
-		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		mesh.set_surface_override_material(0, material)
-
-func _remove_highlight() -> void:
-	for mesh in mesh_instances:
-		if _original_materials.has(mesh):
-			mesh.set_surface_override_material(0, _original_materials[mesh])
-		else:
-			mesh.set_surface_override_material(0, null)
+		highlight.remove(mesh_instances)
 
 func enable() -> void:
 	is_enabled = true

@@ -34,7 +34,9 @@ func add_item(item: ItemData, amount: int = 1) -> bool:
 		var added_count: int = amount - remaining
 		print("[背包] 添加物品: %s x%d" % [item.item_name, added_count])
 		emit_signal("item_added", item, added_count)
+		EventBus.item_picked_up.emit(item, added_count)
 		emit_signal("inventory_changed")
+		EventBus.inventory_changed.emit()
 		return true
 	
 	print("[背包] 添加物品失败: %s (背包已满)" % item.item_name)
@@ -95,6 +97,7 @@ func remove_item(item_id: String, amount: int = 1) -> bool:
 		print("[背包] 移除物品: %s x%d" % [item_name, removed_count])
 		emit_signal("item_removed", item_id, removed_count)
 		emit_signal("inventory_changed")
+		EventBus.inventory_changed.emit()
 		return true
 	
 	return false
@@ -207,6 +210,7 @@ func clear_inventory() -> void:
 		quick_bar[i] = -1
 	selected_quick_slot = 0
 	emit_signal("inventory_changed")
+	EventBus.inventory_changed.emit()
 
 func get_empty_slot_count() -> int:
 	var count: int = 0

@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://switch_test_001"]
 
-[ext_resource type="Script" path="res://scripts/objects/test_switch.gd" id="1_switch"]
+[ext_resource type="Script" path="res://scripts/objects/switch.gd" id="1_switch"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_switch"]
 size = Vector3(0.3, 0.3, 0.1)

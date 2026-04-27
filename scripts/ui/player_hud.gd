@@ -8,20 +8,17 @@ extends Control
 var player: PlayerController = null
 
 func _ready() -> void:
-	await get_tree().process_frame
-	_find_and_connect_player()
+	EventBus.stamina_changed.connect(_on_stamina_changed)
+	EventBus.interaction_prompt_changed.connect(_on_interaction_prompt_changed)
 
-func _find_and_connect_player() -> void:
-	player = get_parent().get_node("Player") as PlayerController
-	if not player:
-		push_warning("[PlayerHUD] 未找到玩家节点")
-		return
-	
-	player.stamina_changed.connect(_on_stamina_changed)
-	player.interaction_prompt_changed.connect(_on_interaction_prompt_changed)
-	
-	_on_stamina_changed(player.stamina)
-	print("[PlayerHUD] 已连接玩家信号")
+	await get_tree().process_frame
+	player = InteractionManager.get_player()
+	if player:
+		_on_stamina_changed(player.stamina)
+	else:
+		push_warning("[PlayerHUD] 未找到玩家")
+	if UIManager:
+		UIManager.register_hud(self)
 
 func _on_stamina_changed(stamina: float) -> void:
 	if stamina_bar:

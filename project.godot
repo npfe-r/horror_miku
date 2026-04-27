@@ -17,7 +17,11 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+EventBus="*res://scripts/autoload/event_bus.gd"
+GameManager="*res://scripts/autoload/game_manager.gd"
 InteractionManager="*res://scripts/autoload/interaction_manager.gd"
+UIManager="*res://scripts/autoload/ui_manager.gd"
+SaveManager="*res://scripts/autoload/save_manager.gd"
 
 [input]
 

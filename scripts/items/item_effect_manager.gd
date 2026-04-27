@@ -84,9 +84,11 @@ static func _heal_player(user: Node) -> bool:
 static func _use_key(user: Node, item: ItemData) -> bool:
 	if not user or not item:
 		return false
-	
-	push_warning("Key usage should be handled by interaction system")
-	return false
+
+	# 钥匙的使用由交互系统处理（门检测玩家背包中的钥匙）
+	# 此处仅发出事件通知
+	print("[ItemEffectManager] 尝试使用钥匙: %s" % item.item_name)
+	return true
 
 static func _show_map(user: Node) -> bool:
 	if not user:
