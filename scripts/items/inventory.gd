@@ -219,6 +219,81 @@ func get_empty_slot_count() -> int:
 			count += 1
 	return count
 
+func move_slot(from_index: int, to_index: int) -> bool:
+	if from_index < 0 or from_index >= MAX_SLOTS:
+		return false
+	if to_index < 0 or to_index >= MAX_SLOTS:
+		return false
+	if from_index == to_index:
+		return false
+	
+	var from_slot: ItemSlot = slots[from_index]
+	var to_slot: ItemSlot = slots[to_index]
+	
+	if from_slot.is_empty():
+		return false
+	
+	if to_slot.is_empty():
+		to_slot.set_item(from_slot.item_data, from_slot.count)
+		from_slot.clear()
+	else:
+		if from_slot.item_data.item_id == to_slot.item_data.item_id and to_slot.count < to_slot.item_data.max_stack:
+			var space: int = to_slot.item_data.max_stack - to_slot.count
+			var to_transfer: int = mini(space, from_slot.count)
+			to_slot.add_amount(to_transfer)
+			from_slot.remove_amount(to_transfer)
+		else:
+			var temp_item: ItemData = to_slot.item_data
+			var temp_count: int = to_slot.count
+			to_slot.set_item(from_slot.item_data, from_slot.count)
+			from_slot.set_item(temp_item, temp_count)
+	
+	emit_signal("inventory_changed")
+	EventBus.inventory_changed.emit()
+	return true
+
+func drop_item(slot_index: int, amount: int = -1) -> Dictionary:
+	if slot_index < 0 or slot_index >= MAX_SLOTS:
+		return {}
+	
+	var slot: ItemSlot = slots[slot_index]
+	if slot.is_empty():
+		return {}
+	
+	var drop_data: Dictionary = {
+		"item": slot.item_data,
+		"count": amount if amount > 0 else slot.count
+	}
+	
+	if amount <= 0 or amount >= slot.count:
+		slot.clear()
+	else:
+		slot.remove_amount(amount)
+	
+	emit_signal("inventory_changed")
+	EventBus.inventory_changed.emit()
+	return drop_data
+
+func split_slot(slot_index: int, amount: int) -> bool:
+	if slot_index < 0 or slot_index >= MAX_SLOTS:
+		return false
+	if amount <= 0:
+		return false
+	
+	var slot: ItemSlot = slots[slot_index]
+	if slot.is_empty() or slot.count <= amount:
+		return false
+	
+	for i in range(MAX_SLOTS):
+		if slots[i].is_empty():
+			slots[i].set_item(slot.item_data, amount)
+			slot.remove_amount(amount)
+			emit_signal("inventory_changed")
+			EventBus.inventory_changed.emit()
+			return true
+	
+	return false
+
 func serialize() -> Dictionary:
 	var data: Dictionary = {}
 	data["slots"] = []

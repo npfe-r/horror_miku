@@ -4,21 +4,35 @@ extends Control
 @onready var crosshair: Control = $Crosshair
 @onready var interaction_label: Label = $InteractionLabel
 @onready var stamina_bar: ProgressBar = $StaminaBarContainer/StaminaBar
+@onready var inventory_menu: InventoryMenu = $InventoryMenu
 
 var player: PlayerController = null
 
 func _ready() -> void:
 	EventBus.stamina_changed.connect(_on_stamina_changed)
 	EventBus.interaction_prompt_changed.connect(_on_interaction_prompt_changed)
-
+	
 	await get_tree().process_frame
 	player = InteractionManager.get_player()
 	if player:
 		_on_stamina_changed(player.stamina)
+		if inventory_menu:
+			inventory_menu.set_player(player)
 	else:
 		push_warning("[PlayerHUD] 未找到玩家")
 	if UIManager:
 		UIManager.register_hud(self)
+
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("toggle_inventory"):
+		toggle_inventory_menu()
+		get_viewport().set_input_as_handled()
+
+func toggle_inventory_menu() -> void:
+	if inventory_menu:
+		inventory_menu.toggle()
+		if crosshair:
+			crosshair.visible = not inventory_menu.visible
 
 func _on_stamina_changed(stamina: float) -> void:
 	if stamina_bar:

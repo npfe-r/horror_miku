@@ -1,6 +1,7 @@
-[gd_scene format=3 uid="uid://dh2k5m3j7v8xp"]
+[gd_scene load_steps=4 format=3 uid="uid://dh2k5m3j7v8xp"]
 
 [ext_resource type="Script" path="res://scripts/ui/player_hud.gd" id="1_hud"]
+[ext_resource type="PackedScene" uid="uid://c8m3k5n2h9wxy" path="res://scenes/ui/inventory_menu.tscn" id="2_inventory"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stamina_bg"]
 bg_color = Color(0.1, 0.1, 0.1, 0.7)
@@ -161,3 +162,6 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_stamina_fill")
 max_value = 100.0
 value = 100.0
 show_percentage = false
+
+[node name="InventoryMenu" parent="." instance=ExtResource("2_inventory")]
+layout_mode = 1
