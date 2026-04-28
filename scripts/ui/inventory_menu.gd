@@ -91,6 +91,7 @@ func _create_slot_panel(slot_index: int, is_quick_bar: bool) -> Control:
 	panel.add_theme_stylebox_override("panel", style)
 	
 	var margin := MarginContainer.new()
+	margin.name = "Margin"
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
 	margin.add_theme_constant_override("margin_left", 4)
 	margin.add_theme_constant_override("margin_top", 4)
@@ -175,9 +176,23 @@ func _open_menu() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	selected_slot_index = -1
 	_hide_item_info()
+	
+	if not player:
+		player = InteractionManager.get_player()
+		if player and player.inventory:
+			player.inventory.inventory_changed.connect(_update_display)
+			player.inventory.selected_slot_changed.connect(_update_quick_bar_selection)
+			print("[InventoryMenu] _open_menu: 重新连接玩家信号")
+	
+	if not player:
+		print("[InventoryMenu] _open_menu: player is null!")
+		return
+	if not player.inventory:
+		print("[InventoryMenu] _open_menu: player.inventory is null!")
+		return
+	
 	_update_display()
-	if player and player.inventory:
-		_update_quick_bar_selection(player.inventory.selected_quick_slot)
+	_update_quick_bar_selection(player.inventory.selected_quick_slot)
 
 func _close_menu() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -204,7 +219,7 @@ func _update_slot_display(container: Control, slot_index: int, is_quick_bar: boo
 		print("[InventoryMenu] _update_slot_display: SlotPanel not found for slot %d, container children: %s" % [slot_index, container.get_children()])
 		return
 	
-	var icon_rect: TextureRect = panel.get_node_or_null("MarginContainer/Icon") as TextureRect
+	var icon_rect: TextureRect = panel.get_node_or_null("Margin/Icon") as TextureRect
 	var count_label: Label = panel.get_node_or_null("CountLabel") as Label
 	var name_label: Label = panel.get_node_or_null("NameLabel") as Label
 	
@@ -283,7 +298,7 @@ func _start_drag(container: Control, slot_index: int, is_quick_bar: bool) -> voi
 	dragged_from_index = slot_index
 	dragged_from_quick_bar = is_quick_bar
 	
-	var icon_rect: TextureRect = panel.get_node_or_null("MarginContainer/Icon") as TextureRect
+	var icon_rect: TextureRect = panel.get_node_or_null("Margin/Icon") as TextureRect
 	if not icon_rect:
 		return
 	

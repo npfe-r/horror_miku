@@ -1,13 +1,11 @@
-[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3 uid="uid://c8key_example001"]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bt3ptxp387clo"]
 
-[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1_key"]
+[ext_resource type="Texture2D" uid="uid://chwy4lml6suqi" path="res://icon.svg" id="1_3favm"]
+[ext_resource type="Script" uid="uid://dkcreak267pg8" path="res://scripts/items/item_data.gd" id="1_key"]
 
 [resource]
 script = ExtResource("1_key")
 item_id = "classroom_key_001"
 item_name = "教室钥匙"
 description = "一把普通的教室钥匙，可以打开对应的教室门。"
-item_type = 0
-max_stack = 1
-is_consumable = false
-use_effect = ""
+icon = ExtResource("1_3favm")

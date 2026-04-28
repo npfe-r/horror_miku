@@ -424,7 +424,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0, 10)
 
 [node name="Monster" parent="Enemies" unique_id=1205255205 instance=ExtResource("9_monster")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0, -10)
-sight_angle = 90.0
 
 [node name="DebugUI" parent="." unique_id=1001097700 instance=ExtResource("2_ui")]
 

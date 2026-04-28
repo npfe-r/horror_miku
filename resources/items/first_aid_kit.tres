@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3 uid="uid://c8heal_example001"]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://cda4spl2uljhl"]
 
-[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1_heal"]
+[ext_resource type="Script" uid="uid://dkcreak267pg8" path="res://scripts/items/item_data.gd" id="1_heal"]
+[ext_resource type="Texture2D" uid="uid://chwy4lml6suqi" path="res://icon.svg" id="1_pkmnj"]
 
 [resource]
 script = ExtResource("1_heal")
 item_id = "first_aid_kit_001"
 item_name = "急救包"
 description = "一个急救包，使用后可以恢复体力。"
+icon = ExtResource("1_pkmnj")
 item_type = 1
 max_stack = 5
 is_consumable = true
