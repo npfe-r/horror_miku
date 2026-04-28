@@ -150,8 +150,11 @@ func set_player(p: PlayerController) -> void:
 	if player and player.inventory:
 		player.inventory.inventory_changed.connect(_update_display)
 		player.inventory.selected_slot_changed.connect(_update_quick_bar_selection)
+		print("[InventoryMenu] set_player: connected to inventory signals")
 		_update_display()
 		_update_quick_bar_selection(player.inventory.selected_quick_slot)
+	else:
+		print("[InventoryMenu] set_player: player or inventory is null")
 
 func toggle() -> void:
 	visible = not visible
@@ -184,7 +187,10 @@ func _close_menu() -> void:
 
 func _update_display() -> void:
 	if not player or not player.inventory:
+		print("[InventoryMenu] _update_display: player or inventory is null")
 		return
+	
+	print("[InventoryMenu] _update_display: slot_controls=%d, quick_bar_controls=%d" % [slot_controls.size(), quick_bar_controls.size()])
 	
 	for i in range(slot_controls.size()):
 		_update_slot_display(slot_controls[i], i, false)
@@ -193,15 +199,17 @@ func _update_display() -> void:
 		_update_slot_display(quick_bar_controls[i], i, true)
 
 func _update_slot_display(container: Control, slot_index: int, is_quick_bar: bool) -> void:
-	var panel: PanelContainer = container.find_child("SlotPanel") as PanelContainer
+	var panel: PanelContainer = container.get_node_or_null("SlotPanel") as PanelContainer
 	if not panel:
+		print("[InventoryMenu] _update_slot_display: SlotPanel not found for slot %d, container children: %s" % [slot_index, container.get_children()])
 		return
 	
-	var icon_rect: TextureRect = panel.find_child("Icon") as TextureRect
-	var count_label: Label = panel.find_child("CountLabel") as Label
-	var name_label: Label = panel.find_child("NameLabel") as Label
+	var icon_rect: TextureRect = panel.get_node_or_null("MarginContainer/Icon") as TextureRect
+	var count_label: Label = panel.get_node_or_null("CountLabel") as Label
+	var name_label: Label = panel.get_node_or_null("NameLabel") as Label
 	
 	if not icon_rect or not count_label or not name_label:
+		print("[InventoryMenu] _update_slot_display: child nodes not found for slot %d" % slot_index)
 		return
 	
 	var actual_slot: ItemSlot = null
@@ -213,6 +221,7 @@ func _update_slot_display(container: Control, slot_index: int, is_quick_bar: boo
 		actual_slot = player.inventory.get_slot(slot_index)
 	
 	if actual_slot and not actual_slot.is_empty():
+		print("[InventoryMenu] _update_slot_display: slot %d has item: %s x%d" % [slot_index, actual_slot.item_data.item_name, actual_slot.count])
 		if actual_slot.item_data.icon:
 			icon_rect.texture = actual_slot.item_data.icon
 		else:
@@ -227,7 +236,7 @@ func _update_slot_display(container: Control, slot_index: int, is_quick_bar: boo
 func _update_quick_bar_selection(index: int) -> void:
 	for i in range(quick_bar_controls.size()):
 		var container: Control = quick_bar_controls[i]
-		var panel: PanelContainer = container.find_child("SlotPanel") as PanelContainer
+		var panel: PanelContainer = container.get_node_or_null("SlotPanel") as PanelContainer
 		if not panel:
 			continue
 		var style: StyleBoxFlat = panel.get_theme_stylebox("panel") as StyleBoxFlat
@@ -256,7 +265,7 @@ func _start_drag(container: Control, slot_index: int, is_quick_bar: bool) -> voi
 	if not player or not player.inventory:
 		return
 	
-	var panel: PanelContainer = container.find_child("SlotPanel") as PanelContainer
+	var panel: PanelContainer = container.get_node_or_null("SlotPanel") as PanelContainer
 	if not panel:
 		return
 	
@@ -274,7 +283,7 @@ func _start_drag(container: Control, slot_index: int, is_quick_bar: bool) -> voi
 	dragged_from_index = slot_index
 	dragged_from_quick_bar = is_quick_bar
 	
-	var icon_rect: TextureRect = panel.find_child("Icon") as TextureRect
+	var icon_rect: TextureRect = panel.get_node_or_null("MarginContainer/Icon") as TextureRect
 	if not icon_rect:
 		return
 	
@@ -389,7 +398,7 @@ func _cancel_drag() -> void:
 			container = slot_controls[dragged_from_index]
 		
 		if container:
-			var panel: PanelContainer = container.find_child("SlotPanel") as PanelContainer
+			var panel: PanelContainer = container.get_node_or_null("SlotPanel") as PanelContainer
 			if panel:
 				var style: StyleBoxFlat = panel.get_theme_stylebox("panel") as StyleBoxFlat
 				if style:

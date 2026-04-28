@@ -21,6 +21,7 @@ func _initialize_slots() -> void:
 	slots.clear()
 	for i in range(MAX_SLOTS):
 		slots.append(ItemSlot.new())
+	print("[Inventory] 初始化 %d 个槽位" % MAX_SLOTS)
 
 func add_item(item: ItemData, amount: int = 1) -> bool:
 	if not item:
