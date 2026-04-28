@@ -35,7 +35,11 @@ func _ready() -> void:
 	_connect_signals()
 
 func _load_default_icon() -> void:
-	default_icon = load(DEFAULT_ICON_PATH) as Texture2D
+	if ResourceLoader.exists(DEFAULT_ICON_PATH):
+		default_icon = load(DEFAULT_ICON_PATH) as Texture2D
+	else:
+		push_warning("默认图标文件不存在: " + DEFAULT_ICON_PATH)
+		default_icon = null
 
 func _setup_ui() -> void:
 	_create_inventory_slots()
