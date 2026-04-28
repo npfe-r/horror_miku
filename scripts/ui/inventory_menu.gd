@@ -5,6 +5,7 @@ signal menu_closed()
 
 const SLOT_SIZE: int = 64
 const SLOT_GAP: int = 8
+const DEFAULT_ICON_PATH: String = "res://icon.svg"
 
 @onready var grid_container: GridContainer = $Panel/MarginContainer/VBoxContainer/SlotsContainer/GridContainer
 @onready var item_info_panel: PanelContainer = $Panel/MarginContainer/VBoxContainer/ItemInfoPanel
@@ -16,8 +17,8 @@ const SLOT_GAP: int = 8
 @onready var drop_zone: Control = $DropZone
 
 var player: PlayerController = null
-var slot_controls: Array[PanelContainer] = []
-var quick_bar_controls: Array[PanelContainer] = []
+var slot_controls: Array[Control] = []
+var quick_bar_controls: Array[Control] = []
 var selected_slot_index: int = -1
 
 var dragged_item: Control = null
@@ -25,10 +26,16 @@ var dragged_from_index: int = -1
 var dragged_from_quick_bar: bool = false
 var drag_offset: Vector2 = Vector2.ZERO
 
+var default_icon: Texture2D = null
+
 func _ready() -> void:
 	visible = false
+	_load_default_icon()
 	_setup_ui()
 	_connect_signals()
+
+func _load_default_icon() -> void:
+	default_icon = load(DEFAULT_ICON_PATH) as Texture2D
 
 func _setup_ui() -> void:
 	_create_inventory_slots()
@@ -42,7 +49,7 @@ func _create_inventory_slots() -> void:
 	slot_controls.clear()
 	
 	for i in range(Inventory.MAX_SLOTS):
-		var slot: PanelContainer = _create_slot_panel(i, false)
+		var slot: Control = _create_slot_panel(i, false)
 		slot_controls.append(slot)
 		grid_container.add_child(slot)
 
@@ -53,17 +60,24 @@ func _create_quick_bar_slots() -> void:
 	quick_bar_controls.clear()
 	
 	for i in range(Inventory.QUICK_BAR_SIZE):
-		var slot: PanelContainer = _create_slot_panel(i, true)
+		var slot: Control = _create_slot_panel(i, true)
 		quick_bar_controls.append(slot)
 		quick_bar_container.add_child(slot)
 
-func _create_slot_panel(slot_index: int, is_quick_bar: bool) -> PanelContainer:
+func _create_slot_panel(slot_index: int, is_quick_bar: bool) -> Control:
+	var container := VBoxContainer.new()
+	container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	container.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	container.add_theme_constant_override("separation", 2)
+	container.set_meta("slot_index", slot_index)
+	container.set_meta("is_quick_bar", is_quick_bar)
+	
 	var panel := PanelContainer.new()
+	panel.name = "SlotPanel"
 	panel.custom_minimum_size = Vector2(SLOT_SIZE, SLOT_SIZE)
 	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	panel.set_meta("slot_index", slot_index)
-	panel.set_meta("is_quick_bar", is_quick_bar)
+	container.add_child(panel)
 	
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.15, 0.15, 0.15, 0.9)
@@ -73,31 +87,43 @@ func _create_slot_panel(slot_index: int, is_quick_bar: bool) -> PanelContainer:
 	panel.add_theme_stylebox_override("panel", style)
 	
 	var margin := MarginContainer.new()
+	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
 	margin.add_theme_constant_override("margin_left", 4)
 	margin.add_theme_constant_override("margin_top", 4)
 	margin.add_theme_constant_override("margin_right", 4)
 	margin.add_theme_constant_override("margin_bottom", 4)
 	panel.add_child(margin)
 	
-	var vbox := VBoxContainer.new()
-	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	margin.add_child(vbox)
-	
 	var icon_rect := TextureRect.new()
 	icon_rect.name = "Icon"
+	icon_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 	icon_rect.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon_rect.custom_minimum_size = Vector2(40, 40)
-	vbox.add_child(icon_rect)
+	margin.add_child(icon_rect)
+	
+	var name_label := Label.new()
+	name_label.name = "NameLabel"
+	name_label.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	name_label.offset_left = 4
+	name_label.offset_bottom = -4
+	name_label.add_theme_font_size_override("font_size", 9)
+	name_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9, 1))
+	name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+	name_label.add_theme_constant_override("outline_size", 2)
+	name_label.clip_text = true
+	name_label.custom_minimum_size = Vector2(SLOT_SIZE - 28, 12)
+	panel.add_child(name_label)
 	
 	var count_label := Label.new()
 	count_label.name = "CountLabel"
-	count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	count_label.add_theme_font_size_override("font_size", 12)
+	count_label.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	count_label.offset_right = -4
+	count_label.offset_bottom = -4
+	count_label.add_theme_font_size_override("font_size", 10)
 	count_label.add_theme_color_override("font_color", Color.WHITE)
 	count_label.add_theme_color_override("font_outline_color", Color.BLACK)
 	count_label.add_theme_constant_override("outline_size", 2)
-	vbox.add_child(count_label)
+	panel.add_child(count_label)
 	
 	if is_quick_bar:
 		var key_label := Label.new()
@@ -106,11 +132,11 @@ func _create_slot_panel(slot_index: int, is_quick_bar: bool) -> PanelContainer:
 		key_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		key_label.add_theme_font_size_override("font_size", 10)
 		key_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
-		vbox.add_child(key_label)
+		container.add_child(key_label)
 	
-	panel.gui_input.connect(_on_slot_gui_input.bind(panel))
+	container.gui_input.connect(_on_slot_gui_input.bind(container))
 	
-	return panel
+	return container
 
 func _connect_signals() -> void:
 	close_button.pressed.connect(_on_close_button_pressed)
@@ -162,11 +188,16 @@ func _update_display() -> void:
 	for i in range(quick_bar_controls.size()):
 		_update_slot_display(quick_bar_controls[i], i, true)
 
-func _update_slot_display(panel: PanelContainer, slot_index: int, is_quick_bar: bool) -> void:
+func _update_slot_display(container: Control, slot_index: int, is_quick_bar: bool) -> void:
+	var panel: PanelContainer = container.find_child("SlotPanel") as PanelContainer
+	if not panel:
+		return
+	
 	var icon_rect: TextureRect = panel.find_child("Icon") as TextureRect
 	var count_label: Label = panel.find_child("CountLabel") as Label
+	var name_label: Label = panel.find_child("NameLabel") as Label
 	
-	if not icon_rect or not count_label:
+	if not icon_rect or not count_label or not name_label:
 		return
 	
 	var actual_slot: ItemSlot = null
@@ -178,15 +209,23 @@ func _update_slot_display(panel: PanelContainer, slot_index: int, is_quick_bar: 
 		actual_slot = player.inventory.get_slot(slot_index)
 	
 	if actual_slot and not actual_slot.is_empty():
-		icon_rect.texture = actual_slot.item_data.icon
+		if actual_slot.item_data.icon:
+			icon_rect.texture = actual_slot.item_data.icon
+		else:
+			icon_rect.texture = default_icon
 		count_label.text = str(actual_slot.count) if actual_slot.count > 1 else ""
+		name_label.text = actual_slot.item_data.item_name
 	else:
 		icon_rect.texture = null
 		count_label.text = ""
+		name_label.text = ""
 
 func _update_quick_bar_selection(index: int) -> void:
 	for i in range(quick_bar_controls.size()):
-		var panel: PanelContainer = quick_bar_controls[i]
+		var container: Control = quick_bar_controls[i]
+		var panel: PanelContainer = container.find_child("SlotPanel") as PanelContainer
+		if not panel:
+			continue
 		var style: StyleBoxFlat = panel.get_theme_stylebox("panel") as StyleBoxFlat
 		if style:
 			if i == index:
@@ -196,21 +235,25 @@ func _update_quick_bar_selection(index: int) -> void:
 				style.border_color = Color(0.3, 0.3, 0.3, 1)
 				style.set_border_width_all(2)
 
-func _on_slot_gui_input(event: InputEvent, panel: PanelContainer) -> void:
-	var slot_index: int = panel.get_meta("slot_index")
-	var is_quick_bar: bool = panel.get_meta("is_quick_bar")
+func _on_slot_gui_input(event: InputEvent, container: Control) -> void:
+	var slot_index: int = container.get_meta("slot_index")
+	var is_quick_bar: bool = container.get_meta("is_quick_bar")
 	
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
-				_start_drag(panel, slot_index, is_quick_bar)
+				_start_drag(container, slot_index, is_quick_bar)
 			else:
-				_end_drag(panel, slot_index, is_quick_bar)
+				_end_drag(container, slot_index, is_quick_bar)
 		elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 			_on_slot_right_click(slot_index, is_quick_bar)
 
-func _start_drag(panel: PanelContainer, slot_index: int, is_quick_bar: bool) -> void:
+func _start_drag(container: Control, slot_index: int, is_quick_bar: bool) -> void:
 	if not player or not player.inventory:
+		return
+	
+	var panel: PanelContainer = container.find_child("SlotPanel") as PanelContainer
+	if not panel:
 		return
 	
 	var actual_slot: ItemSlot = null
@@ -261,7 +304,7 @@ func _start_drag(panel: PanelContainer, slot_index: int, is_quick_bar: bool) -> 
 	if style:
 		style.bg_color = Color(0.1, 0.1, 0.1, 0.5)
 
-func _end_drag(_panel: PanelContainer, _slot_index: int, _is_quick_bar: bool) -> void:
+func _end_drag(_container: Control, _slot_index: int, _is_quick_bar: bool) -> void:
 	if not dragged_item:
 		return
 	
@@ -269,7 +312,7 @@ func _end_drag(_panel: PanelContainer, _slot_index: int, _is_quick_bar: bool) ->
 	
 	var dropped_on_slot: bool = false
 	for i in range(slot_controls.size()):
-		var target: PanelContainer = slot_controls[i]
+		var target: Control = slot_controls[i]
 		if target.get_global_rect().has_point(drop_pos):
 			_handle_drop_on_slot(i, false)
 			dropped_on_slot = true
@@ -277,7 +320,7 @@ func _end_drag(_panel: PanelContainer, _slot_index: int, _is_quick_bar: bool) ->
 	
 	if not dropped_on_slot:
 		for i in range(quick_bar_controls.size()):
-			var target: PanelContainer = quick_bar_controls[i]
+			var target: Control = quick_bar_controls[i]
 			if target.get_global_rect().has_point(drop_pos):
 				_handle_drop_on_slot(i, true)
 				dropped_on_slot = true
@@ -335,16 +378,18 @@ func _cancel_drag() -> void:
 		dragged_item = null
 	
 	if dragged_from_index >= 0:
-		var panel: PanelContainer
+		var container: Control
 		if dragged_from_quick_bar:
-			panel = quick_bar_controls[dragged_from_index]
+			container = quick_bar_controls[dragged_from_index]
 		else:
-			panel = slot_controls[dragged_from_index]
+			container = slot_controls[dragged_from_index]
 		
-		if panel:
-			var style: StyleBoxFlat = panel.get_theme_stylebox("panel") as StyleBoxFlat
-			if style:
-				style.bg_color = Color(0.15, 0.15, 0.15, 0.9)
+		if container:
+			var panel: PanelContainer = container.find_child("SlotPanel") as PanelContainer
+			if panel:
+				var style: StyleBoxFlat = panel.get_theme_stylebox("panel") as StyleBoxFlat
+				if style:
+					style.bg_color = Color(0.15, 0.15, 0.15, 0.9)
 	
 	dragged_from_index = -1
 	dragged_from_quick_bar = false
