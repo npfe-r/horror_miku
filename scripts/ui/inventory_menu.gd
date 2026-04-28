@@ -33,6 +33,10 @@ func _ready() -> void:
 	_load_default_icon()
 	_setup_ui()
 	_connect_signals()
+	
+	var background := get_node_or_null("Background")
+	if background:
+		background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 func _load_default_icon() -> void:
 	if ResourceLoader.exists(DEFAULT_ICON_PATH):
@@ -75,12 +79,14 @@ func _create_slot_panel(slot_index: int, is_quick_bar: bool) -> Control:
 	container.add_theme_constant_override("separation", 2)
 	container.set_meta("slot_index", slot_index)
 	container.set_meta("is_quick_bar", is_quick_bar)
+	container.mouse_filter = Control.MOUSE_FILTER_PASS
 	
 	var panel := PanelContainer.new()
 	panel.name = "SlotPanel"
 	panel.custom_minimum_size = Vector2(SLOT_SIZE, SLOT_SIZE)
 	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	container.add_child(panel)
 	
 	var style := StyleBoxFlat.new()
@@ -97,6 +103,7 @@ func _create_slot_panel(slot_index: int, is_quick_bar: bool) -> Control:
 	margin.add_theme_constant_override("margin_top", 4)
 	margin.add_theme_constant_override("margin_right", 4)
 	margin.add_theme_constant_override("margin_bottom", 4)
+	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(margin)
 	
 	var icon_rect := TextureRect.new()
@@ -104,6 +111,7 @@ func _create_slot_panel(slot_index: int, is_quick_bar: bool) -> Control:
 	icon_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 	icon_rect.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	margin.add_child(icon_rect)
 	
 	var name_label := Label.new()
@@ -117,6 +125,7 @@ func _create_slot_panel(slot_index: int, is_quick_bar: bool) -> Control:
 	name_label.add_theme_constant_override("outline_size", 2)
 	name_label.clip_text = true
 	name_label.custom_minimum_size = Vector2(SLOT_SIZE - 28, 12)
+	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(name_label)
 	
 	var count_label := Label.new()
@@ -128,6 +137,7 @@ func _create_slot_panel(slot_index: int, is_quick_bar: bool) -> Control:
 	count_label.add_theme_color_override("font_color", Color.WHITE)
 	count_label.add_theme_color_override("font_outline_color", Color.BLACK)
 	count_label.add_theme_constant_override("outline_size", 2)
+	count_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(count_label)
 	
 	if is_quick_bar:
@@ -137,9 +147,10 @@ func _create_slot_panel(slot_index: int, is_quick_bar: bool) -> Control:
 		key_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		key_label.add_theme_font_size_override("font_size", 10)
 		key_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
+		key_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		container.add_child(key_label)
 	
-	container.gui_input.connect(_on_slot_gui_input.bind(container))
+	panel.gui_input.connect(_on_slot_gui_input.bind(container))
 	
 	return container
 
@@ -307,12 +318,14 @@ func _start_drag(container: Control, slot_index: int, is_quick_bar: bool) -> voi
 	dragged_item.custom_minimum_size = Vector2(48, 48)
 	dragged_item.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	dragged_item.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	dragged_item.z_index = 100
 	
 	var drag_icon := TextureRect.new()
 	drag_icon.texture = icon_rect.texture
 	drag_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 	drag_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	drag_icon.custom_minimum_size = Vector2(48, 48)
+	drag_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dragged_item.add_child(drag_icon)
 	
 	var drag_count := Label.new()
@@ -322,6 +335,7 @@ func _start_drag(container: Control, slot_index: int, is_quick_bar: bool) -> voi
 	drag_count.add_theme_color_override("font_color", Color.WHITE)
 	drag_count.add_theme_color_override("font_outline_color", Color.BLACK)
 	drag_count.add_theme_constant_override("outline_size", 2)
+	drag_count.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dragged_item.add_child(drag_count)
 	
 	add_child(dragged_item)
