@@ -74,6 +74,7 @@ func _ready() -> void:
 	_target_head_height = HEAD_HEIGHT_NORMAL
 	head.position.y = HEAD_HEIGHT_NORMAL
 	
+	InteractionManager.set_player(self)
 	_setup_inventory()
 
 func _input(event: InputEvent) -> void:
