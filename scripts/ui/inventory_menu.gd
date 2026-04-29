@@ -160,8 +160,10 @@ func _connect_signals() -> void:
 func set_player(p: PlayerController) -> void:
 	player = p
 	if player and player.inventory:
-		player.inventory.inventory_changed.connect(_update_display)
-		player.inventory.selected_slot_changed.connect(_update_quick_bar_selection)
+		if not player.inventory.inventory_changed.is_connected(_update_display):
+			player.inventory.inventory_changed.connect(_update_display)
+		if not player.inventory.selected_slot_changed.is_connected(_update_quick_bar_selection):
+			player.inventory.selected_slot_changed.connect(_update_quick_bar_selection)
 		print("[InventoryMenu] set_player: connected to inventory signals")
 		_update_display()
 		_update_quick_bar_selection(player.inventory.selected_quick_slot)
@@ -191,8 +193,10 @@ func _open_menu() -> void:
 	if not player:
 		player = InteractionManager.get_player()
 		if player and player.inventory:
-			player.inventory.inventory_changed.connect(_update_display)
-			player.inventory.selected_slot_changed.connect(_update_quick_bar_selection)
+			if not player.inventory.inventory_changed.is_connected(_update_display):
+				player.inventory.inventory_changed.connect(_update_display)
+			if not player.inventory.selected_slot_changed.is_connected(_update_quick_bar_selection):
+				player.inventory.selected_slot_changed.connect(_update_quick_bar_selection)
 			print("[InventoryMenu] _open_menu: 重新连接玩家信号")
 	
 	if not player:
@@ -378,25 +382,48 @@ func _handle_drop_on_slot(target_index: int, target_is_quick_bar: bool) -> void:
 		return
 	
 	if dragged_from_quick_bar:
+		var from_inv_index: int = player.inventory.quick_bar[dragged_from_index]
 		if target_is_quick_bar:
-			var from_inv_index: int = player.inventory.quick_bar[dragged_from_index]
 			var to_inv_index: int = player.inventory.quick_bar[target_index]
 			player.inventory.quick_bar[dragged_from_index] = to_inv_index
 			player.inventory.quick_bar[target_index] = from_inv_index
 			player.inventory.emit_signal("quick_bar_changed", dragged_from_index)
 			player.inventory.emit_signal("quick_bar_changed", target_index)
-		else:
-			var from_inv_index: int = player.inventory.quick_bar[dragged_from_index]
-			if from_inv_index >= 0:
-				player.inventory.move_slot(from_inv_index, target_index)
+			player.inventory.emit_signal("inventory_changed")
+			return
+		elif from_inv_index >= 0:
+			player.inventory.move_slot(from_inv_index, target_index)
+			var from_slot: ItemSlot = player.inventory.get_slot(from_inv_index)
+			if from_slot and from_slot.is_empty():
+				player.inventory.quick_bar[dragged_from_index] = -1
+			else:
 				player.inventory.quick_bar[dragged_from_index] = target_index
-				player.inventory.emit_signal("quick_bar_changed", dragged_from_index)
+			for i in range(player.inventory.QUICK_BAR_SIZE):
+				if i != dragged_from_index and player.inventory.quick_bar[i] == target_index:
+					player.inventory.quick_bar[i] = from_inv_index
+					player.inventory.emit_signal("quick_bar_changed", i)
+			player.inventory.emit_signal("quick_bar_changed", dragged_from_index)
+			player.inventory.emit_signal("quick_bar_changed", target_index)
+			return
 	else:
 		if target_is_quick_bar:
+			for i in range(player.inventory.QUICK_BAR_SIZE):
+				if player.inventory.quick_bar[i] == dragged_from_index:
+					player.inventory.quick_bar[i] = -1
+					player.inventory.emit_signal("quick_bar_changed", i)
 			player.inventory.quick_bar[target_index] = dragged_from_index
-			player.inventory.emit_signal("quick_bar_changed", target_index)
 		else:
 			player.inventory.move_slot(dragged_from_index, target_index)
+			for i in range(player.inventory.QUICK_BAR_SIZE):
+				if player.inventory.quick_bar[i] == dragged_from_index:
+					player.inventory.quick_bar[i] = target_index
+					player.inventory.emit_signal("quick_bar_changed", i)
+				elif player.inventory.quick_bar[i] == target_index:
+					player.inventory.quick_bar[i] = dragged_from_index
+					player.inventory.emit_signal("quick_bar_changed", i)
+	
+	player.inventory.emit_signal("quick_bar_changed", target_index)
+	player.inventory.emit_signal("inventory_changed")
 
 func _handle_drop_outside() -> void:
 	if not player or not player.inventory:
@@ -411,6 +438,10 @@ func _handle_drop_outside() -> void:
 	var drop_data: Dictionary = player.inventory.drop_item(actual_index)
 	if drop_data.is_empty():
 		return
+	
+	if dragged_from_quick_bar:
+		player.inventory.quick_bar[dragged_from_index] = -1
+		player.inventory.emit_signal("quick_bar_changed", dragged_from_index)
 	
 	print("[背包] 丢弃物品: %s x%d" % [drop_data.item.item_name, drop_data.count])
 
@@ -484,6 +515,6 @@ func _input(event: InputEvent) -> void:
 	if not visible:
 		return
 	
-	if event.is_action_pressed("toggle_inventory") or event.is_action_pressed("ui_cancel"):
+	if event.is_action_pressed("ui_cancel"):
 		close()
 		get_viewport().set_input_as_handled()
