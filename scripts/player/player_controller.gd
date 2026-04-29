@@ -68,7 +68,7 @@ var _hiding_head_yaw: float = 0.0
 var _hiding_head_pitch: float = 0.0
 
 var inventory: Inventory = null
-var current_hiding_spot: HidingSpot = null
+var current_hiding_spot: Node = null
 
 var equipped_item: ItemData = null
 var equipped_model_instance: Node3D = null
@@ -260,12 +260,14 @@ func set_hiding(hiding: bool) -> void:
 			equipped_model_instance.visible = false
 	else:
 		current_hiding_spot = null
+		head.rotation = Vector3.ZERO
+		head.position.y = HEAD_HEIGHT_NORMAL
 		_hiding_head_yaw = 0.0
 		_hiding_head_pitch = 0.0
 		if equipped_model_instance:
 			equipped_model_instance.visible = true
 
-func hide_in_spot(spot: HidingSpot) -> void:
+func hide_in_spot(spot: Node) -> void:
 	current_hiding_spot = spot
 	set_hiding(true)
 

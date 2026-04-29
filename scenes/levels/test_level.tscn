@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://dh2k5m3j7v8xp" path="res://scenes/ui/player_hud.tscn" id="8_hud"]
 [ext_resource type="PackedScene" uid="uid://c8ym5k3j7xmqv" path="res://scenes/enemies/monster.tscn" id="9_monster"]
 [ext_resource type="PackedScene" uid="uid://hiding_spot_test_001" path="res://scenes/objects/hiding_spot.tscn" id="10_hiding"]
+[ext_resource type="PackedScene" uid="uid://chair_test_001" path="res://scenes/objects/chair.tscn" id="11_chair"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_test_floor"]
 size = Vector3(30, 0.1, 30)
@@ -409,6 +410,9 @@ item_data = ExtResource("7_2mu0v")
 
 [node name="TestHidingSpot" parent="Interactables" unique_id=556677889 instance=ExtResource("10_hiding")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5)
+
+[node name="TestChair" parent="Interactables" unique_id=112233445 instance=ExtResource("11_chair")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 0, -3)
 
 [node name="Enemies" type="Node3D" parent="." unique_id=87318709]
 
