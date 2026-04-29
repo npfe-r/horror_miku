@@ -747,7 +747,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.779956, -8)
 [node name="Lighting" type="Node3D" parent="." unique_id=1112515227]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="Lighting" unique_id=114675531]
-transform = Transform3D(0.5, -0.5, 0.707, 0, 0.707, 0.707, -0.707, -0.5, 0.5, 0, 15, 0)
+transform = Transform3D(0.57740843, -0.57316625, 0.58144635, 0, 0.71215934, 0.70201784, -0.8164554, -0.405351, 0.4112068, 0, 15, 0)
 light_color = Color(0.7, 0.7, 0.8, 1)
 light_energy = 0.4
 shadow_enabled = true
@@ -914,7 +914,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24, 0.5, 0)
 
 [node name="Monster" parent="Enemies" unique_id=952757689 instance=ExtResource("6_monster")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0.5, -14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.09743, 11.249225, -10.360168)
 
 [node name="SpawnPoint" type="Marker3D" parent="." unique_id=1499468166]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -8)
