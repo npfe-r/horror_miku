@@ -38,6 +38,9 @@ const NOISE_EMIT_INTERVAL_WALK: float = 0.5
 const NOISE_EMIT_INTERVAL_RUN: float = 0.3
 const NOISE_EMIT_INTERVAL_CROUCH: float = 0.8
 
+const HIDING_LOOK_VERTICAL: float = 20.0
+const HIDING_LOOK_HORIZONTAL: float = 30.0
+
 @export var mouse_sensitivity: float = MOUSE_SENSITIVITY
 
 var stamina: float = STAMINA_MAX
@@ -61,8 +64,11 @@ var _target_collision_height: float = COLLISION_HEIGHT_NORMAL
 var _can_stand_up: bool = true
 var _noise_emit_timer: float = 0.0
 var _stamina_recovery_cooldown: float = 0.0
+var _hiding_head_yaw: float = 0.0
+var _hiding_head_pitch: float = 0.0
 
 var inventory: Inventory = null
+var current_hiding_spot: HidingSpot = null
 
 var equipped_item: ItemData = null
 var equipped_model_instance: Node3D = null
@@ -85,12 +91,20 @@ func _ready() -> void:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		rotate_y(-event.relative.x * mouse_sensitivity)
-		head.rotate_x(-event.relative.y * mouse_sensitivity)
-		head.rotation.x = clamp(head.rotation.x, deg_to_rad(-90), deg_to_rad(90))
+		if is_hiding:
+			_hiding_head_yaw -= event.relative.x * mouse_sensitivity * 0.5
+			_hiding_head_yaw = clamp(_hiding_head_yaw, deg_to_rad(-HIDING_LOOK_HORIZONTAL), deg_to_rad(HIDING_LOOK_HORIZONTAL))
+			_hiding_head_pitch -= event.relative.y * mouse_sensitivity
+			_hiding_head_pitch = clamp(_hiding_head_pitch, deg_to_rad(-HIDING_LOOK_VERTICAL), deg_to_rad(HIDING_LOOK_VERTICAL))
+			head.rotation = Vector3(_hiding_head_pitch, _hiding_head_yaw, 0.0)
+		else:
+			rotate_y(-event.relative.x * mouse_sensitivity)
+			head.rotate_x(-event.relative.y * mouse_sensitivity)
+			head.rotation.x = clamp(head.rotation.x, deg_to_rad(-90), deg_to_rad(90))
 
 func _physics_process(delta: float) -> void:
 	if is_hiding:
+		_handle_interaction_input()
 		return
 	
 	_check_ceiling_clearance()
@@ -245,8 +259,20 @@ func set_hiding(hiding: bool) -> void:
 		if equipped_model_instance:
 			equipped_model_instance.visible = false
 	else:
+		current_hiding_spot = null
+		_hiding_head_yaw = 0.0
+		_hiding_head_pitch = 0.0
 		if equipped_model_instance:
 			equipped_model_instance.visible = true
+
+func hide_in_spot(spot: HidingSpot) -> void:
+	current_hiding_spot = spot
+	set_hiding(true)
+
+func camera_rotation_restore() -> void:
+	head.rotation = Vector3.ZERO
+	_hiding_head_yaw = 0.0
+	_hiding_head_pitch = 0.0
 
 func get_current_speed() -> float:
 	if is_crouching:
@@ -262,6 +288,9 @@ func _check_interaction() -> void:
 
 func _handle_interaction_input() -> void:
 	if Input.is_action_just_pressed("interact"):
+		if is_hiding and current_hiding_spot:
+			current_hiding_spot._exit_direct()
+			return
 		var im := get_node_or_null("/root/InteractionManager")
 		if im:
 			im.try_interact()
