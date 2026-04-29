@@ -73,25 +73,28 @@ func _try_add_to_empty_slot(item: ItemData, amount: int) -> int:
 	
 	return remaining
 
-## 自动将未被快捷栏引用的物品槽分配到空的快捷栏位
+## 自动将未被快捷栏引用的可装备物品分配到空的快捷栏位
 func _auto_assign_quick_bar() -> void:
 	_cleanup_stale_quick_bar()
 	for i in range(MAX_SLOTS):
 		if slots[i].is_empty():
+			continue
+		if not slots[i].item_data.is_equippable:
 			continue
 		if quick_bar.has(i):
 			continue
 		for j in range(QUICK_BAR_SIZE):
 			if quick_bar[j] < 0:
 				quick_bar[j] = i
+				print("[背包] 快捷栏[%d] ← %s (可装备)" % [j + 1, slots[i].item_data.item_name])
 				break
 
-## 清理指向空格子的快捷栏引用
+## 清理指向空格子或不可装备物品的快捷栏引用
 func _cleanup_stale_quick_bar() -> void:
 	for j in range(QUICK_BAR_SIZE):
 		var slot_index: int = quick_bar[j]
 		if slot_index >= 0:
-			if slots[slot_index].is_empty():
+			if slots[slot_index].is_empty() or not slots[slot_index].item_data.is_equippable:
 				quick_bar[j] = -1
 
 func remove_item(item_id: String, amount: int = 1) -> bool:
@@ -182,7 +185,13 @@ func set_quick_bar_slot(quick_slot_index: int, inventory_slot_index: int) -> boo
 	if inventory_slot_index < 0 or inventory_slot_index >= MAX_SLOTS:
 		return false
 	
+	var slot: ItemSlot = slots[inventory_slot_index]
+	if slot.is_empty() or not slot.item_data.is_equippable:
+		print("[背包] 拒绝设置快捷栏: %s 不可装备" % (slot.item_data.item_name if slot.item_data else "空槽位"))
+		return false
+	
 	quick_bar[quick_slot_index] = inventory_slot_index
+	print("[背包] 手动设置快捷栏[%d] ← %s (可装备)" % [quick_slot_index + 1, slot.item_data.item_name])
 	emit_signal("quick_bar_changed", quick_slot_index)
 	return true
 

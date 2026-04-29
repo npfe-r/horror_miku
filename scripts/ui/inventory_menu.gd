@@ -383,6 +383,12 @@ func _handle_drop_on_slot(target_index: int, target_is_quick_bar: bool) -> void:
 	if not player or not player.inventory:
 		return
 	
+	if target_is_quick_bar:
+		var dragged_item_data: ItemData = _get_dragged_item_data()
+		if not dragged_item_data or not dragged_item_data.is_equippable:
+			print("[背包] 拒绝拖入快捷栏: 物品不可装备")
+			return
+	
 	if dragged_from_quick_bar:
 		var from_inv_index: int = player.inventory.quick_bar[dragged_from_index]
 		if target_is_quick_bar:
@@ -426,6 +432,19 @@ func _handle_drop_on_slot(target_index: int, target_is_quick_bar: bool) -> void:
 	
 	player.inventory.emit_signal("quick_bar_changed", target_index)
 	player.inventory.emit_signal("inventory_changed")
+
+func _get_dragged_item_data() -> ItemData:
+	if not player or not player.inventory:
+		return null
+	var actual_index: int = dragged_from_index
+	if dragged_from_quick_bar:
+		actual_index = player.inventory.quick_bar[dragged_from_index]
+		if actual_index < 0:
+			return null
+	var slot: ItemSlot = player.inventory.get_slot(actual_index)
+	if not slot or slot.is_empty():
+		return null
+	return slot.item_data
 
 func _handle_drop_outside() -> void:
 	if not player or not player.inventory:
