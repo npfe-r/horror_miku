@@ -23,6 +23,14 @@ InteractionManager="*res://scripts/autoload/interaction_manager.gd"
 UIManager="*res://scripts/autoload/ui_manager.gd"
 SaveManager="*res://scripts/autoload/save_manager.gd"
 
+[display]
+
+window/stretch/mode="viewport"
+
+[gui]
+
+theme="res://theme/flat_theme.tres"
+
 [input]
 
 move_forward={

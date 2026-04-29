@@ -3,7 +3,8 @@ extends Control
 
 @onready var crosshair: Control = $Crosshair
 @onready var interaction_label: Label = $InteractionLabel
-@onready var stamina_bar: ProgressBar = $StaminaBarContainer/StaminaBar
+@onready var stamina_bar_bg: ColorRect = $StaminaBarContainer/StaminaBarBg
+@onready var stamina_bar_fill: ColorRect = $StaminaBarContainer/StaminaBarFill
 @onready var equipped_item_label: Label = $EquippedItemContainer/EquippedItemLabel
 @onready var quick_slots: Array[PanelContainer] = [
 	$QuickBarContainer/QuickBarHBox/QuickSlot0,
@@ -21,6 +22,8 @@ func _ready() -> void:
 	EventBus.inventory_changed.connect(_on_inventory_changed)
 	EventBus.item_equipped.connect(_on_item_equipped)
 	EventBus.item_unequipped.connect(_on_item_unequipped)
+	
+	resized.connect(_on_hud_resized)
 	
 	inventory_menu = get_node_or_null("InventoryMenu") as InventoryMenu
 	print("[PlayerHUD] _ready: inventory_menu=%s" % inventory_menu)
@@ -55,8 +58,31 @@ func toggle_inventory_menu() -> void:
 			crosshair.visible = not inventory_menu.visible
 
 func _on_stamina_changed(stamina: float) -> void:
-	if stamina_bar:
-		stamina_bar.value = stamina
+	if stamina_bar_fill and stamina_bar_bg:
+		var bar_width: float = stamina_bar_bg.size.x
+		if bar_width > 0:
+			var fill_ratio: float = clampf(stamina / 100.0, 0.0, 1.0)
+			var fill_width: float = bar_width * fill_ratio
+			stamina_bar_fill.offset_left = -fill_width / 2.0
+			stamina_bar_fill.offset_right = fill_width / 2.0
+
+			var t: float = clampf((stamina - 10.0) / 20.0, 0.0, 1.0)
+			stamina_bar_fill.color = Color(1, t, t, 0.9)
+		else:
+			await get_tree().process_frame
+			_on_stamina_changed(stamina)
+
+func _on_hud_resized() -> void:
+	if stamina_bar_fill and stamina_bar_bg:
+		var bar_width: float = stamina_bar_bg.size.x
+		if bar_width > 0 and player:
+			var fill_ratio: float = clampf(player.stamina / 100.0, 0.0, 1.0)
+			var fill_width: float = bar_width * fill_ratio
+			stamina_bar_fill.offset_left = -fill_width / 2.0
+			stamina_bar_fill.offset_right = fill_width / 2.0
+
+			var t: float = clampf((player.stamina - 10.0) / 20.0, 0.0, 1.0)
+			stamina_bar_fill.color = Color(1, t, t, 0.9)
 
 func _on_interaction_prompt_changed(prompt_text: String) -> void:
 	if interaction_label:
@@ -114,18 +140,22 @@ func _update_quick_bar() -> void:
 
 func _highlight_selected_slot(slot_index: int) -> void:
 	var selected_style := StyleBoxFlat.new()
-	selected_style.bg_color = Color(0.3, 0.6, 0.9, 0.8)
-	selected_style.corner_radius_top_left = 4
-	selected_style.corner_radius_top_right = 4
-	selected_style.corner_radius_bottom_right = 4
-	selected_style.corner_radius_bottom_left = 4
-	
+	selected_style.bg_color = Color(0.2, 0.2, 0.2, 0.85)
+	selected_style.border_color = Color(0.8, 0.8, 0.8, 0.9)
+	selected_style.set_border_width_all(2)
+	selected_style.corner_radius_top_left = 0
+	selected_style.corner_radius_top_right = 0
+	selected_style.corner_radius_bottom_right = 0
+	selected_style.corner_radius_bottom_left = 0
+
 	var default_style := StyleBoxFlat.new()
-	default_style.bg_color = Color(0.1, 0.1, 0.1, 0.6)
-	default_style.corner_radius_top_left = 4
-	default_style.corner_radius_top_right = 4
-	default_style.corner_radius_bottom_right = 4
-	default_style.corner_radius_bottom_left = 4
+	default_style.bg_color = Color(0.08, 0.08, 0.08, 0.55)
+	default_style.border_color = Color(0.3, 0.3, 0.3, 0.8)
+	default_style.set_border_width_all(1)
+	default_style.corner_radius_top_left = 0
+	default_style.corner_radius_top_right = 0
+	default_style.corner_radius_bottom_right = 0
+	default_style.corner_radius_bottom_left = 0
 	
 	for i in range(quick_slots.size()):
 		var slot: PanelContainer = quick_slots[i]

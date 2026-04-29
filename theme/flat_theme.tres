@@ -1,0 +1,158 @@
+[gd_resource type="Theme" format=3 uid="uid://c0mm3n4r5f1a7"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_disabled"]
+bg_color = Color(0.08, 0.08, 0.08, 0.5)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.2, 0.2, 0.5)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
+bg_color = Color(0.25, 0.25, 0.25, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.6, 0.6, 0.6, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_normal"]
+bg_color = Color(0.15, 0.15, 0.15, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.4, 0.4, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_pressed"]
+bg_color = Color(0.9, 0.9, 0.9, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.9, 0.9, 0.9, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_checkbox"]
+bg_color = Color(0.1, 0.1, 0.1, 0.8)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.35, 0.35, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_separator"]
+bg_color = Color(0.3, 0.3, 0.3, 0.8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slider_grabber"]
+bg_color = Color(0.7, 0.7, 0.7, 0.9)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lineedit"]
+bg_color = Color(0.1, 0.1, 0.1, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.3, 0.3, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.08, 0.08, 0.08, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.35, 0.35, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_bg"]
+bg_color = Color(0.08, 0.08, 0.08, 0.6)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_fill"]
+bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_scrollbar_grabber"]
+bg_color = Color(0.4, 0.4, 0.4, 0.7)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_scrollbar_track"]
+bg_color = Color(0.08, 0.08, 0.08, 0.4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab"]
+bg_color = Color(0.12, 0.12, 0.12, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_color = Color(0.3, 0.3, 0.3, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab_selected"]
+bg_color = Color(0.2, 0.2, 0.2, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5, 0.5, 0.5, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tooltip"]
+bg_color = Color(0.08, 0.08, 0.08, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.4, 0.4, 1)
+
+[resource]
+Button/colors/font_color = Color(0.85, 0.85, 0.85, 1)
+Button/colors/font_disabled_color = Color(0.4, 0.4, 0.4, 0.5)
+Button/colors/font_hover_color = Color(1, 1, 1, 1)
+Button/colors/font_pressed_color = Color(0.05, 0.05, 0.05, 1)
+Button/styles/disabled = SubResource("StyleBoxFlat_button_disabled")
+Button/styles/hover = SubResource("StyleBoxFlat_button_hover")
+Button/styles/normal = SubResource("StyleBoxFlat_button_normal")
+Button/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+CheckBox/colors/font_color = Color(0.85, 0.85, 0.85, 1)
+CheckBox/colors/font_disabled_color = Color(0.4, 0.4, 0.4, 0.5)
+CheckBox/colors/font_hover_color = Color(1, 1, 1, 1)
+CheckBox/colors/font_pressed_color = Color(0.85, 0.85, 0.85, 1)
+CheckBox/styles/disabled = SubResource("StyleBoxFlat_checkbox")
+CheckBox/styles/hover = SubResource("StyleBoxFlat_checkbox")
+CheckBox/styles/normal = SubResource("StyleBoxFlat_checkbox")
+CheckBox/styles/pressed = SubResource("StyleBoxFlat_checkbox")
+HSeparator/styles/separator = SubResource("StyleBoxFlat_separator")
+HSlider/styles/grabber = SubResource("StyleBoxFlat_slider_grabber")
+Label/colors/font_color = Color(0.85, 0.85, 0.85, 1)
+Label/colors/font_shadow_color = Color(0, 0, 0, 0.5)
+Label/constants/shadow_offset_x = 1
+Label/constants/shadow_offset_y = 1
+LineEdit/colors/caret_color = Color(0.85, 0.85, 0.85, 1)
+LineEdit/colors/font_color = Color(0.85, 0.85, 0.85, 1)
+LineEdit/colors/font_selected_color = Color(0, 0, 0, 1)
+LineEdit/colors/selection_color = Color(0.5, 0.5, 0.5, 0.5)
+LineEdit/styles/focus = SubResource("StyleBoxFlat_lineedit")
+LineEdit/styles/normal = SubResource("StyleBoxFlat_lineedit")
+LineEdit/styles/read_only = SubResource("StyleBoxFlat_lineedit")
+OptionButton/colors/font_color = Color(0.85, 0.85, 0.85, 1)
+OptionButton/styles/hover = SubResource("StyleBoxFlat_button_hover")
+OptionButton/styles/normal = SubResource("StyleBoxFlat_button_normal")
+OptionButton/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+Panel/styles/panel = SubResource("StyleBoxFlat_panel")
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_panel")
+PopupMenu/colors/font_color = Color(0.85, 0.85, 0.85, 1)
+PopupMenu/colors/font_hover_color = Color(1, 1, 1, 1)
+PopupMenu/styles/panel = SubResource("StyleBoxFlat_panel")
+ProgressBar/colors/font_color = Color(0.57, 0.57, 0.57, 1)
+ProgressBar/styles/background = SubResource("StyleBoxFlat_progress_bg")
+ProgressBar/styles/fill = SubResource("StyleBoxFlat_progress_fill")
+ScrollBar/styles/grabber = SubResource("StyleBoxFlat_scrollbar_grabber")
+ScrollBar/styles/grabber_highlight = SubResource("StyleBoxFlat_scrollbar_grabber")
+ScrollBar/styles/track = SubResource("StyleBoxFlat_scrollbar_track")
+SpinBox/styles/focus = SubResource("StyleBoxFlat_lineedit")
+SpinBox/styles/normal = SubResource("StyleBoxFlat_lineedit")
+TabBar/colors/font_color = Color(0.6, 0.6, 0.6, 1)
+TabBar/colors/font_selected_color = Color(1, 1, 1, 1)
+TabBar/styles/tab = SubResource("StyleBoxFlat_tab")
+TabBar/styles/tab_selected = SubResource("StyleBoxFlat_tab_selected")
+TabContainer/styles/tab = SubResource("StyleBoxFlat_tab")
+TabContainer/styles/tab_selected = SubResource("StyleBoxFlat_tab_selected")
+Tooltip/colors/font_color = Color(0.85, 0.85, 0.85, 1)
+Tooltip/styles/panel = SubResource("StyleBoxFlat_tooltip")
+VSeparator/styles/separator = SubResource("StyleBoxFlat_separator")
+VSlider/styles/grabber = SubResource("StyleBoxFlat_slider_grabber")
+Window/colors/title_color = Color(0.85, 0.85, 0.85, 1)
+Window/styles/panel = SubResource("StyleBoxFlat_panel")

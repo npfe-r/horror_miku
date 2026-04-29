@@ -5,6 +5,7 @@ extends Control
 @onready var state_label: Label = $VBoxContainer/StateLabel
 @onready var stand_up_label: Label = $VBoxContainer/StandUpLabel
 @onready var monster_label: Label = $VBoxContainer/MonsterLabel
+@onready var stamina_label: Label = $VBoxContainer/StaminaLabel
 @onready var quick_bar_label: Label = $InventoryContainer/QuickBarLabel
 @onready var items_label: Label = $InventoryContainer/ItemsLabel
 
@@ -76,6 +77,9 @@ func _update_state_display() -> void:
 		state_text = "状态: 行走"
 
 	state_label.text = state_text
+
+	if stamina_label and player:
+		stamina_label.text = "体力: %.1f" % player.stamina
 
 	if stand_up_label:
 		if player.is_crouching:

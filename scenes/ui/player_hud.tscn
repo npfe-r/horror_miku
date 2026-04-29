@@ -1,53 +1,29 @@
-[gd_scene load_steps=4 format=3 uid="uid://dh2k5m3j7v8xp"]
+[gd_scene format=3 uid="uid://dh2k5m3j7v8xp"]
 
-[ext_resource type="Script" path="res://scripts/ui/player_hud.gd" id="1_hud"]
-[ext_resource type="PackedScene" uid="uid://c8m3k5n2h9wxy" path="res://scenes/ui/inventory_menu.tscn" id="2_inventory"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stamina_bg"]
-bg_color = Color(0.1, 0.1, 0.1, 0.7)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stamina_fill"]
-bg_color = Color(0.3, 0.7, 0.4, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
+[ext_resource type="Script" uid="uid://dojo53kuqlu8g" path="res://scripts/ui/player_hud.gd" id="1_hud"]
+[ext_resource type="PackedScene" uid="uid://c8m3k5n2iawxy" path="res://scenes/ui/inventory_menu.tscn" id="2_inventory"]
+[ext_resource type="Theme" uid="uid://c0mm3n4r5f1a7" path="res://theme/flat_theme.tres" id="3_gmrx"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slot_bg"]
-bg_color = Color(0.1, 0.1, 0.1, 0.6)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
+bg_color = Color(0.08, 0.08, 0.08, 0.55)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.3, 0.3, 0.8)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slot_selected"]
-bg_color = Color(0.3, 0.6, 0.9, 0.8)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slot_hover"]
-bg_color = Color(0.2, 0.4, 0.6, 0.7)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[node name="PlayerHUD" type="Control"]
+[node name="PlayerHUD" type="Control" unique_id=1795473219]
 layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
+anchor_right = 1.0070001
 anchor_bottom = 1.0
+offset_left = 8.0
+offset_right = -0.064086914
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("3_gmrx")
 script = ExtResource("1_hud")
 
-[node name="Crosshair" type="Control" parent="."]
+[node name="Crosshair" type="Control" parent="." unique_id=649989935]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -61,22 +37,22 @@ offset_bottom = 10.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Dot" type="ColorRect" parent="Crosshair"]
+[node name="Dot" type="ColorRect" parent="Crosshair" unique_id=1607529109]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -2.0
-offset_top = -2.0
-offset_right = 2.0
-offset_bottom = 2.0
+offset_left = -1.5
+offset_top = -1.5
+offset_right = 1.5
+offset_bottom = 1.5
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(1, 1, 1, 0.9)
+color = Color(0.9, 0.9, 0.9, 0.9)
 
-[node name="TopLine" type="ColorRect" parent="Crosshair"]
+[node name="TopLine" type="ColorRect" parent="Crosshair" unique_id=1342163442]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -89,9 +65,9 @@ offset_right = 1.0
 offset_bottom = -4.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(1, 1, 1, 0.9)
+color = Color(0.9, 0.9, 0.9, 0.85)
 
-[node name="BottomLine" type="ColorRect" parent="Crosshair"]
+[node name="BottomLine" type="ColorRect" parent="Crosshair" unique_id=334020189]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -104,9 +80,9 @@ offset_right = 1.0
 offset_bottom = 8.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(1, 1, 1, 0.9)
+color = Color(0.9, 0.9, 0.9, 0.85)
 
-[node name="LeftLine" type="ColorRect" parent="Crosshair"]
+[node name="LeftLine" type="ColorRect" parent="Crosshair" unique_id=426291231]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -119,9 +95,9 @@ offset_right = -4.0
 offset_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(1, 1, 1, 0.9)
+color = Color(0.9, 0.9, 0.9, 0.85)
 
-[node name="RightLine" type="ColorRect" parent="Crosshair"]
+[node name="RightLine" type="ColorRect" parent="Crosshair" unique_id=915657520]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -134,11 +110,12 @@ offset_right = 8.0
 offset_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(1, 1, 1, 0.9)
+color = Color(0.9, 0.9, 0.9, 0.85)
 
-[node name="InteractionLabel" type="Label" parent="."]
+[node name="InteractionLabel" type="Label" parent="." unique_id=1815481836]
+visible = false
 layout_mode = 1
-anchors_preset = 7
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -149,44 +126,50 @@ offset_right = 100.0
 offset_bottom = 45.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_colors/font_color = Color(1, 1, 1, 0.9)
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 0.95)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 2
 text = "[E] 交互"
 horizontal_alignment = 1
-visible = false
 
-[node name="StaminaBarContainer" type="Control" parent="."]
+[node name="StaminaBarContainer" type="Control" parent="." unique_id=1743614195]
 layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
+anchors_preset = 12
 anchor_top = 1.0
-anchor_right = 0.5
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -100.0
-offset_top = -50.0
-offset_right = 100.0
-offset_bottom = -20.0
+offset_left = 48.0
+offset_top = -23.734985
+offset_right = -48.0
+offset_bottom = -18.734985
 grow_horizontal = 2
 grow_vertical = 0
+mouse_filter = 1
 
-[node name="StaminaBar" type="ProgressBar" parent="StaminaBarContainer"]
+[node name="StaminaBarBg" type="ColorRect" parent="StaminaBarContainer" unique_id=1743614196]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 15.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_stamina_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_stamina_fill")
-max_value = 100.0
-value = 100.0
-show_percentage = false
+mouse_filter = 1
+color = Color(0.08, 0.08, 0.08, 0.5)
 
-[node name="EquippedItemContainer" type="Control" parent="."]
+[node name="StaminaBarFill" type="ColorRect" parent="StaminaBarContainer" unique_id=1743614197]
 layout_mode = 1
-anchors_preset = 7
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(1, 1, 1, 0.9)
+
+[node name="EquippedItemContainer" type="Control" parent="." unique_id=1409405511]
+layout_mode = 1
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -199,20 +182,20 @@ grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 
-[node name="EquippedItemLabel" type="Label" parent="EquippedItemContainer"]
+[node name="EquippedItemLabel" type="Label" parent="EquippedItemContainer" unique_id=1671755804]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_color = Color(1, 1, 1, 0.9)
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 0.9)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 2
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="QuickBarContainer" type="Control" parent="."]
+[node name="QuickBarContainer" type="Control" parent="." unique_id=583763974]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -227,7 +210,7 @@ grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 
-[node name="QuickBarHBox" type="HBoxContainer" parent="QuickBarContainer"]
+[node name="QuickBarHBox" type="HBoxContainer" parent="QuickBarContainer" unique_id=1234722644]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -236,115 +219,76 @@ anchor_right = 0.5
 anchor_bottom = 0.5
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 4
 
-[node name="QuickSlot0" type="PanelContainer" parent="QuickBarContainer/QuickBarHBox"]
+[node name="QuickSlot0" type="PanelContainer" parent="QuickBarContainer/QuickBarHBox" unique_id=1860781091]
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
-custom_minimum_size = Vector2(60, 60)
-theme_override_styles/panel = SubResource("StyleBoxFlat_slot_bg")
 mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot_bg")
 
-[node name="Icon" type="TextureRect" parent="QuickBarContainer/QuickBarHBox/QuickSlot0"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-stretch_mode = 5
+[node name="Icon" type="TextureRect" parent="QuickBarContainer/QuickBarHBox/QuickSlot0" unique_id=1861159228]
+layout_mode = 2
 mouse_filter = 2
+expand_mode = 1
 
-[node name="IndexLabel" type="Label" parent="QuickBarContainer/QuickBarHBox/QuickSlot0"]
-layout_mode = 1
-offset_left = 4.0
-offset_top = 40.0
-offset_right = 20.0
-offset_bottom = 56.0
-theme_override_colors/font_color = Color(1, 1, 1, 0.6)
+[node name="IndexLabel" type="Label" parent="QuickBarContainer/QuickBarHBox/QuickSlot0" unique_id=316777098]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 0.7)
 theme_override_constants/outline_size = 1
 text = "1"
-mouse_filter = 2
 
-[node name="QuickSlot1" type="PanelContainer" parent="QuickBarContainer/QuickBarHBox"]
+[node name="QuickSlot1" type="PanelContainer" parent="QuickBarContainer/QuickBarHBox" unique_id=68092186]
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
-custom_minimum_size = Vector2(60, 60)
-theme_override_styles/panel = SubResource("StyleBoxFlat_slot_bg")
 mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot_bg")
 
-[node name="Icon" type="TextureRect" parent="QuickBarContainer/QuickBarHBox/QuickSlot1"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-stretch_mode = 5
+[node name="Icon" type="TextureRect" parent="QuickBarContainer/QuickBarHBox/QuickSlot1" unique_id=937112628]
+layout_mode = 2
 mouse_filter = 2
+expand_mode = 1
 
-[node name="IndexLabel" type="Label" parent="QuickBarContainer/QuickBarHBox/QuickSlot1"]
-layout_mode = 1
-offset_left = 4.0
-offset_top = 40.0
-offset_right = 20.0
-offset_bottom = 56.0
-theme_override_colors/font_color = Color(1, 1, 1, 0.6)
+[node name="IndexLabel" type="Label" parent="QuickBarContainer/QuickBarHBox/QuickSlot1" unique_id=2053168467]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 0.7)
 theme_override_constants/outline_size = 1
 text = "2"
-mouse_filter = 2
 
-[node name="QuickSlot2" type="PanelContainer" parent="QuickBarContainer/QuickBarHBox"]
+[node name="QuickSlot2" type="PanelContainer" parent="QuickBarContainer/QuickBarHBox" unique_id=231568562]
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
-custom_minimum_size = Vector2(60, 60)
-theme_override_styles/panel = SubResource("StyleBoxFlat_slot_bg")
 mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot_bg")
 
-[node name="Icon" type="TextureRect" parent="QuickBarContainer/QuickBarHBox/QuickSlot2"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-stretch_mode = 5
+[node name="Icon" type="TextureRect" parent="QuickBarContainer/QuickBarHBox/QuickSlot2" unique_id=718178735]
+layout_mode = 2
 mouse_filter = 2
+expand_mode = 1
 
-[node name="IndexLabel" type="Label" parent="QuickBarContainer/QuickBarHBox/QuickSlot2"]
-layout_mode = 1
-offset_left = 4.0
-offset_top = 40.0
-offset_right = 20.0
-offset_bottom = 56.0
-theme_override_colors/font_color = Color(1, 1, 1, 0.6)
+[node name="IndexLabel" type="Label" parent="QuickBarContainer/QuickBarHBox/QuickSlot2" unique_id=1970639194]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 0.7)
 theme_override_constants/outline_size = 1
 text = "3"
-mouse_filter = 2
 
-[node name="QuickSlot3" type="PanelContainer" parent="QuickBarContainer/QuickBarHBox"]
+[node name="QuickSlot3" type="PanelContainer" parent="QuickBarContainer/QuickBarHBox" unique_id=1860567592]
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
-custom_minimum_size = Vector2(60, 60)
-theme_override_styles/panel = SubResource("StyleBoxFlat_slot_bg")
 mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot_bg")
 
-[node name="Icon" type="TextureRect" parent="QuickBarContainer/QuickBarHBox/QuickSlot3"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-stretch_mode = 5
+[node name="Icon" type="TextureRect" parent="QuickBarContainer/QuickBarHBox/QuickSlot3" unique_id=1049282824]
+layout_mode = 2
 mouse_filter = 2
+expand_mode = 1
 
-[node name="IndexLabel" type="Label" parent="QuickBarContainer/QuickBarHBox/QuickSlot3"]
-layout_mode = 1
-offset_left = 4.0
-offset_top = 40.0
-offset_right = 20.0
-offset_bottom = 56.0
-theme_override_colors/font_color = Color(1, 1, 1, 0.6)
+[node name="IndexLabel" type="Label" parent="QuickBarContainer/QuickBarHBox/QuickSlot3" unique_id=1146396671]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 0.7)
 theme_override_constants/outline_size = 1
 text = "4"
-mouse_filter = 2
 
-[node name="InventoryMenu" parent="." instance=ExtResource("2_inventory")]
+[node name="InventoryMenu" parent="." unique_id=303994343 instance=ExtResource("2_inventory")]
+visible = false
 layout_mode = 1

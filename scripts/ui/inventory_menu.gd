@@ -90,10 +90,10 @@ func _create_slot_panel(slot_index: int, is_quick_bar: bool) -> Control:
 	container.add_child(panel)
 	
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.15, 0.15, 0.15, 0.9)
-	style.border_color = Color(0.3, 0.3, 0.3, 1)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(4)
+	style.bg_color = Color(0.1, 0.1, 0.1, 0.85)
+	style.border_color = Color(0.3, 0.3, 0.3, 0.8)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(0)
 	panel.add_theme_stylebox_override("panel", style)
 	
 	var margin := MarginContainer.new()
@@ -272,11 +272,13 @@ func _update_quick_bar_selection(index: int) -> void:
 		var style: StyleBoxFlat = panel.get_theme_stylebox("panel") as StyleBoxFlat
 		if style:
 			if i == index:
-				style.border_color = Color(0.3, 0.7, 0.4, 1)
-				style.set_border_width_all(3)
-			else:
-				style.border_color = Color(0.3, 0.3, 0.3, 1)
+				style.border_color = Color(0.8, 0.8, 0.8, 1)
 				style.set_border_width_all(2)
+				style.bg_color = Color(0.2, 0.2, 0.2, 0.9)
+			else:
+				style.border_color = Color(0.3, 0.3, 0.3, 0.8)
+				style.set_border_width_all(1)
+				style.bg_color = Color(0.1, 0.1, 0.1, 0.85)
 
 func _on_slot_gui_input(event: InputEvent, container: Control) -> void:
 	var slot_index: int = container.get_meta("slot_index")
@@ -348,7 +350,7 @@ func _start_drag(container: Control, slot_index: int, is_quick_bar: bool) -> voi
 	
 	var style: StyleBoxFlat = panel.get_theme_stylebox("panel") as StyleBoxFlat
 	if style:
-		style.bg_color = Color(0.1, 0.1, 0.1, 0.5)
+		style.bg_color = Color(0.05, 0.05, 0.05, 0.4)
 
 func _end_drag(_container: Control, _slot_index: int, _is_quick_bar: bool) -> void:
 	if not dragged_item:
@@ -462,7 +464,9 @@ func _cancel_drag() -> void:
 			if panel:
 				var style: StyleBoxFlat = panel.get_theme_stylebox("panel") as StyleBoxFlat
 				if style:
-					style.bg_color = Color(0.15, 0.15, 0.15, 0.9)
+					style.bg_color = Color(0.1, 0.1, 0.1, 0.85)
+					style.border_color = Color(0.3, 0.3, 0.3, 0.8)
+					style.set_border_width_all(1)
 	
 	dragged_from_index = -1
 	dragged_from_quick_bar = false

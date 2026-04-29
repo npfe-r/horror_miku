@@ -1,6 +1,7 @@
 [gd_scene load_steps=2 format=3 uid="uid://bq8k5m2j3v9np"]
 
 [ext_resource type="Script" path="res://scripts/ui/debug_ui.gd" id="1_ui"]
+[ext_resource type="Theme" uid="uid://c0mm3n4r5f1a7" path="res://theme/flat_theme.tres" id="2_theme"]
 
 [node name="DebugUI" type="Control"]
 layout_mode = 3
@@ -9,6 +10,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_theme")
 script = ExtResource("1_ui")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
@@ -21,19 +23,28 @@ offset_bottom = 150.0
 
 [node name="NoiseLabel" type="Label" parent="VBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.9)
 text = "噪音等级: 0.0"
 
 [node name="StateLabel" type="Label" parent="VBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.9)
 text = "状态: 行走"
 
 [node name="StandUpLabel" type="Label" parent="VBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.9)
 text = "可以起身: 是"
 visible = false
 
+[node name="StaminaLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.9)
+text = "体力: 100.0"
+
 [node name="MonsterLabel" type="Label" parent="VBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.9)
 text = "敌人状态: 巡逻
 速度: 0.00 m/s"
 visible = false
@@ -53,15 +64,18 @@ grow_vertical = 2
 
 [node name="TitleLabel" type="Label" parent="InventoryContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.9)
 text = "=== 背包 ==="
 horizontal_alignment = 1
 
 [node name="QuickBarLabel" type="Label" parent="InventoryContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.9)
 text = "快捷栏: 无物品"
 autowrap_mode = 2
 
 [node name="ItemsLabel" type="Label" parent="InventoryContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.9)
 text = "背包物品: 无"
 autowrap_mode = 2

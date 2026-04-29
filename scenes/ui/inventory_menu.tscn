@@ -1,42 +1,43 @@
-[gd_scene load_steps=4 format=3 uid="uid://c8m3k5n2h9wxy"]
+[gd_scene load_steps=5 format=3 uid="uid://c8m3k5n2h9wxy"]
 
 [ext_resource type="Script" path="res://scripts/ui/inventory_menu.gd" id="1_menu"]
+[ext_resource type="Theme" uid="uid://c0mm3n4r5f1a7" path="res://theme/flat_theme.tres" id="2_theme"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-bg_color = Color(0.1, 0.1, 0.1, 0.95)
+bg_color = Color(0.07, 0.07, 0.07, 0.95)
 border_color = Color(0.3, 0.3, 0.3, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 0
+corner_radius_top_right = 0
+corner_radius_bottom_right = 0
+corner_radius_bottom_left = 0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_info_panel"]
-bg_color = Color(0.15, 0.15, 0.15, 0.9)
+bg_color = Color(0.12, 0.12, 0.12, 0.9)
 border_color = Color(0.25, 0.25, 0.25, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
+corner_radius_top_left = 0
+corner_radius_top_right = 0
+corner_radius_bottom_right = 0
+corner_radius_bottom_left = 0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_drop_zone"]
-bg_color = Color(0.3, 0.1, 0.1, 0.5)
-border_color = Color(0.8, 0.2, 0.2, 1)
+bg_color = Color(0.15, 0.15, 0.15, 0.6)
+border_color = Color(0.5, 0.5, 0.5, 0.8)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+corner_radius_top_left = 0
+corner_radius_top_right = 0
+corner_radius_bottom_right = 0
+corner_radius_bottom_left = 0
 
 [node name="InventoryMenu" type="Control"]
 layout_mode = 3
@@ -45,6 +46,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_theme")
 script = ExtResource("1_menu")
 
 [node name="Background" type="ColorRect" parent="."]
@@ -54,7 +56,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.5)
+color = Color(0, 0, 0, 0.6)
 
 [node name="DropZone" type="PanelContainer" parent="."]
 layout_mode = 1
@@ -80,7 +82,7 @@ theme_override_constants/margin_bottom = 8
 
 [node name="Label" type="Label" parent="DropZone/MarginContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.5, 0.5, 1)
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 0.8)
 theme_override_font_sizes/font_size = 14
 text = "拖到此处丢弃"
 horizontal_alignment = 1
@@ -129,8 +131,8 @@ size_flags_vertical = 3
 
 [node name="GridContainer" type="GridContainer" parent="Panel/MarginContainer/VBoxContainer/SlotsContainer"]
 layout_mode = 2
-theme_override_constants/h_separation = 8
-theme_override_constants/v_separation = 8
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
 columns = 4
 
 [node name="ItemInfoPanel" type="PanelContainer" parent="Panel/MarginContainer/VBoxContainer"]
@@ -163,7 +165,7 @@ text = "物品类型"
 
 [node name="ItemDesc" type="Label" parent="Panel/MarginContainer/VBoxContainer/ItemInfoPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_colors/font_color = Color(0.75, 0.75, 0.75, 1)
 theme_override_font_sizes/font_size = 12
 text = "物品描述"
 autowrap_mode = 3
@@ -174,14 +176,14 @@ theme_override_constants/separation = 4
 
 [node name="QuickBarLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/QuickBarSection"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
 theme_override_font_sizes/font_size = 12
 text = "快捷栏"
 
 [node name="QuickBarContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_constants/separation = 8
+theme_override_constants/separation = 4
 
 [node name="HSeparator2" type="HSeparator" parent="Panel/MarginContainer/VBoxContainer"]
 layout_mode = 2

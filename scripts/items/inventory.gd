@@ -34,6 +34,7 @@ func add_item(item: ItemData, amount: int = 1) -> bool:
 	if remaining < amount:
 		var added_count: int = amount - remaining
 		print("[背包] 添加物品: %s x%d" % [item.item_name, added_count])
+		_auto_assign_quick_bar()
 		emit_signal("item_added", item, added_count)
 		EventBus.item_picked_up.emit(item, added_count)
 		emit_signal("inventory_changed")
@@ -72,6 +73,27 @@ func _try_add_to_empty_slot(item: ItemData, amount: int) -> int:
 	
 	return remaining
 
+## 自动将未被快捷栏引用的物品槽分配到空的快捷栏位
+func _auto_assign_quick_bar() -> void:
+	_cleanup_stale_quick_bar()
+	for i in range(MAX_SLOTS):
+		if slots[i].is_empty():
+			continue
+		if quick_bar.has(i):
+			continue
+		for j in range(QUICK_BAR_SIZE):
+			if quick_bar[j] < 0:
+				quick_bar[j] = i
+				break
+
+## 清理指向空格子的快捷栏引用
+func _cleanup_stale_quick_bar() -> void:
+	for j in range(QUICK_BAR_SIZE):
+		var slot_index: int = quick_bar[j]
+		if slot_index >= 0:
+			if slots[slot_index].is_empty():
+				quick_bar[j] = -1
+
 func remove_item(item_id: String, amount: int = 1) -> bool:
 	var total_count: int = get_item_count(item_id)
 	if total_count < amount:
@@ -96,6 +118,7 @@ func remove_item(item_id: String, amount: int = 1) -> bool:
 	if remaining < amount:
 		var removed_count: int = amount - remaining
 		print("[背包] 移除物品: %s x%d" % [item_name, removed_count])
+		_cleanup_stale_quick_bar()
 		emit_signal("item_removed", item_id, removed_count)
 		emit_signal("inventory_changed")
 		EventBus.inventory_changed.emit()
@@ -271,6 +294,7 @@ func drop_item(slot_index: int, amount: int = -1) -> Dictionary:
 	else:
 		slot.remove_amount(amount)
 	
+	_cleanup_stale_quick_bar()
 	emit_signal("inventory_changed")
 	EventBus.inventory_changed.emit()
 	return drop_data
@@ -289,6 +313,7 @@ func split_slot(slot_index: int, amount: int) -> bool:
 		if slots[i].is_empty():
 			slots[i].set_item(slot.item_data, amount)
 			slot.remove_amount(amount)
+			_auto_assign_quick_bar()
 			emit_signal("inventory_changed")
 			EventBus.inventory_changed.emit()
 			return true

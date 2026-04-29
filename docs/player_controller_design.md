@@ -171,7 +171,9 @@ func _check_ceiling_clearance() -> void:
 | 最大体力 | 100.0 | STAMINA_MAX |
 | 奔跑消耗率 | 20.0/s | STAMINA_DRAIN_RATE |
 | 恢复率 | 15.0/s | STAMINA_RECOVERY_RATE |
-| 最低奔跑体力 | 10.0 | STAMINA_MIN_TO_RUN |
+| 恢复冷却时间 | 2.0s | STAMINA_RECOVERY_COOLDOWN |
+| 体力条变红阈值 | 30.0 | — |
+| 体力条完全变红阈值 | 10.0 | — |
 
 #### 2.5.2 体力逻辑
 ```gdscript
@@ -179,17 +181,27 @@ func _handle_stamina(delta: float) -> void:
     if is_running and velocity.length() > 0.1:
         stamina -= STAMINA_DRAIN_RATE * delta
         stamina = max(stamina, 0.0)
-        emit_signal("stamina_changed", stamina)
+        if stamina <= 0.0:
+            _stamina_recovery_cooldown = STAMINA_RECOVERY_COOLDOWN
+        EventBus.stamina_changed.emit(stamina)
     elif not is_running:
-        stamina += STAMINA_RECOVERY_RATE * delta
-        stamina = min(stamina, STAMINA_MAX)
-        emit_signal("stamina_changed", stamina)
+        if stamina >= STAMINA_MAX:
+            _stamina_recovery_cooldown = 0.0
+            return
+        if _stamina_recovery_cooldown > 0.0:
+            _stamina_recovery_cooldown -= delta
+        else:
+            stamina += STAMINA_RECOVERY_RATE * delta
+            stamina = min(stamina, STAMINA_MAX)
+            EventBus.stamina_changed.emit(stamina)
 ```
 
 #### 2.5.3 体力限制
-- 体力低于 `STAMINA_MIN_TO_RUN` 时无法奔跑
+- 体力大于 0 时可以奔跑（可消耗至 0）
 - 奔跑时体力持续消耗
-- 停止奔跑时体力自动恢复
+- 体力降至 0 时进入恢复冷却，冷却期间不恢复体力
+- 冷却结束后自动恢复体力
+- 使用恢复道具可立即恢复体力并重置冷却
 
 ---
 
@@ -362,9 +374,89 @@ signal stamina_changed(stamina: float)
 
 ---
 
-## 7. 输入映射
+## 7. 装备系统
 
-### 7.1 移动输入
+装备系统允许玩家将背包中的可装备物品（如手电筒）显示在玩家手中，并提供快捷栏切换与自动装备功能。
+
+### 7.1 场景节点
+
+```
+Head/EquipmentPoint (Node3D) — 装备模型挂载点
+```
+
+装备时，从 `item.model_scene` 实例化模型并添加到 `EquipmentPoint` 下。
+
+### 7.2 装备与卸下
+
+```gdscript
+func equip_item(item: ItemData) -> void:
+    # 已有装备则先卸下
+    if equipped_item:
+        unequip_item()
+    # 实例化模型
+    var model := item.model_scene.instantiate() as Node3D
+    equipment_point.add_child(model)
+    equipped_model_instance = model
+    equipped_item = item
+    EventBus.item_equipped.emit(item)
+
+func unequip_item() -> void:
+    if equipped_model_instance:
+        equipped_model_instance.queue_free()
+        equipped_model_instance = null
+    equipped_item = null
+    EventBus.item_unequipped.emit()
+```
+
+### 7.3 快捷栏联动
+
+切换快捷栏时自动装备：
+
+```gdscript
+func _handle_quick_bar_input() -> void:
+    # 按 1-4 键选中快捷栏
+    if Input.is_action_just_pressed("quick_slot_1"):
+        inventory.select_quick_slot(0)
+        _auto_equip_from_selected_slot()
+    # ... quick_slot_2 ~ 4 同理
+
+func _auto_equip_from_selected_slot() -> void:
+    var item := inventory.get_selected_item()
+    if equipped_item:
+        if item and item.item_id == equipped_item.item_id:
+            return  # 同物品不重复装备
+        unequip_item()
+    if item and item.is_equippable:
+        equip_item(item)
+```
+
+### 7.4 装备相关方法
+
+| 方法 | 说明 |
+|------|------|
+| `equip_item(item)` | 装备指定物品 |
+| `unequip_item()` | 卸下当前装备 |
+| `is_item_equipped()` | 检查是否有装备 |
+| `get_equipped_item()` | 获取当前装备物品 |
+| `use_current_item()` | 使用当前选中快捷栏物品 |
+| `pickup_item(item, count)` | 拾取物品到背包 |
+| `has_item(item_id, amount)` | 检查物品是否存在 |
+| `remove_item(item_id, amount)` | 移除物品 |
+
+### 7.5 装备信号
+
+```gdscript
+signal item_picked_up(item: ItemData, count: int)
+signal inventory_updated()
+```
+
+通过 `EventBus.item_equipped` 和 `EventBus.item_unequipped` 通知 UI。
+
+---
+
+## 8. 输入映射
+
+### 8.1 移动输入
 | 动作名 | 默认按键 | 说明 |
 |--------|---------|------|
 | move_forward | W | 向前移动 |
@@ -372,7 +464,7 @@ signal stamina_changed(stamina: float)
 | move_left | A | 向左移动 |
 | move_right | D | 向右移动 |
 
-### 7.2 动作输入
+### 8.2 动作输入
 | 动作名 | 默认按键 | 说明 |
 |--------|---------|------|
 | run | Shift | 奔跑（按住） |
@@ -380,15 +472,25 @@ signal stamina_changed(stamina: float)
 | jump | Space | 跳跃 |
 | interact | E | 交互 |
 
+### 8.3 快捷栏与道具输入
+| 动作名 | 默认按键 | 说明 |
+|--------|---------|------|
+| quick_slot_1 | 1 | 选中快捷栏第1格 |
+| quick_slot_2 | 2 | 选中快捷栏第2格 |
+| quick_slot_3 | 3 | 选中快捷栏第3格 |
+| quick_slot_4 | 4 | 选中快捷栏第4格 |
+| use_item | 鼠标左键 | 使用当前选中道具 |
+| toggle_inventory | Tab | 打开/关闭背包 |
+
 ---
 
-## 8. 物理参数
+## 9. 物理参数
 
-### 8.1 重力
+### 9.1 重力
 - 使用项目默认重力设置
 - 获取方式: `ProjectSettings.get_setting("physics/3d/default_gravity")`
 
-### 8.2 碰撞
+### 9.2 碰撞
 - **碰撞层**: 默认层
 - **碰撞形状**: CapsuleShape3D
   - 半径: 0.3m
@@ -396,62 +498,57 @@ signal stamina_changed(stamina: float)
 
 ---
 
-## 9. 性能优化
+## 10. 性能优化
 
-### 9.1 噪音发射优化
+### 10.1 噪音发射优化
 - 使用计时器控制噪音发射频率
 - 避免每帧都发出噪音信号
 - 停止移动时立即重置计时器
 
-### 9.2 天花板检测优化
+### 10.2 天花板检测优化
 - 仅在蹲下状态时检测
 - 使用 `force_shapecast_update()` 确保实时性
 
 ---
 
-## 10. 调试支持
+## 11. 调试支持
 
-### 10.1 调试UI
+### 11.1 调试UI
 - 显示体力条
 - 显示当前噪音等级
 - 显示移动状态（行走/奔跑/蹲下/跳跃）
 - 显示是否可以起身
 
-### 10.2 可视化模型
+### 11.2 可视化模型
 - 使用 CapsuleMesh 作为调试模型
 - 材质颜色: 蓝色 (0.2, 0.6, 1.0)
 
 ---
 
-## 11. 设计决策
+## 12. 设计决策
 
-### 11.1 为什么蹲下时不能跳跃？
+### 12.1 为什么蹲下时不能跳跃？
 蹲下时无法跳跃符合恐怖游戏的潜行机制，玩家需要谨慎选择移动方式。
 
-### 11.2 为什么奔跑噪音最频繁？
+### 12.2 为什么奔跑噪音最频繁？
 奔跑是最高风险的移动方式，频繁的噪音增加了被怪物发现的风险，鼓励玩家谨慎使用。
 
-### 11.3 为什么使用平滑过渡？
+### 12.3 为什么使用平滑过渡？
 避免相机突变导致的视觉不适，提升游戏体验。
 
 ---
 
-## 12. 未来扩展
+## 13. 未来扩展
 
-### 12.1 计划功能
-- [ ] 交互系统（门、物品、藏身处）
-- [ ] 道具系统
+### 13.1 计划功能
 - [ ] 受伤系统
 - [ ] 死亡和重生
-
-### 12.2 可配置参数
 - [ ] 鼠标灵敏度设置界面
-- [ ] 移动速度调整
-- [ ] 体力参数调整
+- [ ] 移动速度/体力参数可配置
 
 ---
 
-## 13. 版本历史
+## 14. 版本历史
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
@@ -463,8 +560,16 @@ signal stamina_changed(stamina: float)
 
 ---
 
-## 14. 参考资料
+## 15. 参考资料
 
 - [Godot 4.6 官方文档 - CharacterBody3D](https://docs.godotengine.org/en/stable/classes/class_characterbody3d.html)
 - [游戏设计文档](../游戏设计文档.md)
 - [GDScript 风格指南](https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/gdscript_styleguide.html)
+- [项目架构设计文档](project_architecture_design.md)
+- [道具与背包系统设计文档](item_inventory_design.md)
+
+## 16. 文档版本
+
+| 版本 | 日期 | 说明 |
+|------|------|------|
+| 2.0 | 2026-04-29 | 合并装备系统内容，更新输入映射 |

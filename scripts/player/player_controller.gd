@@ -17,7 +17,7 @@ const MOUSE_SENSITIVITY: float = 0.002
 const STAMINA_MAX: float = 100.0
 const STAMINA_DRAIN_RATE: float = 20.0
 const STAMINA_RECOVERY_RATE: float = 15.0
-const STAMINA_MIN_TO_RUN: float = 10.0
+const STAMINA_RECOVERY_COOLDOWN: float = 2.0
 
 const NOISE_WALK: float = 2.0
 const NOISE_RUN: float = 3.0
@@ -59,6 +59,7 @@ var _target_head_height: float = HEAD_HEIGHT_NORMAL
 var _target_collision_height: float = COLLISION_HEIGHT_NORMAL
 var _can_stand_up: bool = true
 var _noise_emit_timer: float = 0.0
+var _stamina_recovery_cooldown: float = 0.0
 
 var inventory: Inventory = null
 
@@ -125,7 +126,7 @@ func _handle_movement(delta: float) -> void:
 	
 	if is_crouching:
 		current_speed = CROUCH_SPEED
-	elif Input.is_action_pressed("run") and stamina > STAMINA_MIN_TO_RUN and direction != Vector3.ZERO:
+	elif Input.is_action_pressed("run") and stamina > 0.0 and direction != Vector3.ZERO:
 		current_speed = RUN_SPEED
 		is_running = true
 	
@@ -181,11 +182,19 @@ func _handle_stamina(delta: float) -> void:
 	if is_running and velocity.length() > 0.1:
 		stamina -= STAMINA_DRAIN_RATE * delta
 		stamina = max(stamina, 0.0)
+		if stamina <= 0.0:
+			_stamina_recovery_cooldown = STAMINA_RECOVERY_COOLDOWN
 		EventBus.stamina_changed.emit(stamina)
 	elif not is_running:
-		stamina += STAMINA_RECOVERY_RATE * delta
-		stamina = min(stamina, STAMINA_MAX)
-		EventBus.stamina_changed.emit(stamina)
+		if stamina >= STAMINA_MAX:
+			_stamina_recovery_cooldown = 0.0
+			return
+		if _stamina_recovery_cooldown > 0.0:
+			_stamina_recovery_cooldown -= delta
+		else:
+			stamina += STAMINA_RECOVERY_RATE * delta
+			stamina = min(stamina, STAMINA_MAX)
+			EventBus.stamina_changed.emit(stamina)
 
 func _update_noise_level(delta: float) -> void:
 	var previous_noise := noise_level
@@ -367,6 +376,7 @@ func get_item_count(item_id: String) -> int:
 
 func heal(amount: float = 50.0) -> void:
 	stamina = mini(stamina + amount, STAMINA_MAX)
+	_stamina_recovery_cooldown = 0.0
 	emit_signal("stamina_changed", stamina)
 
 func _on_inventory_item_added(item: ItemData, count: int) -> void:
