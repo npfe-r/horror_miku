@@ -248,6 +248,8 @@ func _update_noise_level(delta: float) -> void:
 			_noise_emit_timer = 0.0
 
 func make_noise(level: float, max_range: float = -1.0) -> void:
+	if is_hiding:
+		return
 	if max_range < 0.0:
 		max_range = level * 8.0
 	EventBus.noise_made.emit(level, global_position, max_range)

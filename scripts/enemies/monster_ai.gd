@@ -145,6 +145,8 @@ func _ready() -> void:
 	_setup_player_reference()
 	# 连接感知系统信号
 	_connect_perception_signals()
+	# 连接全局事件
+	_connect_global_events()
 	# 初始化随机因数
 	_update_hearing_factor()
 	_update_visual_factor()
@@ -193,6 +195,17 @@ func _connect_perception_signals() -> void:
 			print("[MonsterAI] 已连接 player_lost 信号")
 	else:
 		push_warning("[MonsterAI] 没有找到 Perception 节点")
+
+## 连接全局事件
+func _connect_global_events() -> void:
+	if EventBus.hiding_state_changed.is_connected(_on_player_hiding_changed):
+		return
+	EventBus.hiding_state_changed.connect(_on_player_hiding_changed)
+
+## 玩家躲藏状态变化回调
+func _on_player_hiding_changed(hiding: bool) -> void:
+	if hiding:
+		_can_see_player = false
 
 ## 物理处理函数
 ## 每个物理帧调用，处理状态更新和移动

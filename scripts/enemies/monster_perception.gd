@@ -80,6 +80,13 @@ func _check_vision() -> void:
 	if not player:
 		return
 	
+	# 玩家在躲藏状态下，不进行视觉检测
+	if player.has_method(&"is_hiding") and player.is_hiding:
+		if _can_see_player:
+			_can_see_player = false
+			emit_signal("player_lost")
+		return
+	
 	var monster_pos := _monster.global_position
 	var player_pos := player.global_position
 	var distance := monster_pos.distance_to(player_pos)
