@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://chwy4lml6suqi" path="res://icon.svg" id="1_c1e4t"]
 [ext_resource type="Script" uid="uid://dkcreak267pg8" path="res://scripts/items/item_data.gd" id="1_flash"]
+[ext_resource type="PackedScene" uid="uid://1psc8rnyxpyc" path="res://resources/models/flashlight_model.tscn" id="2_model"]
 
 [resource]
 script = ExtResource("1_flash")
@@ -9,5 +10,7 @@ item_id = "flashlight_001"
 item_name = "手电筒"
 description = "一个手电筒，可以照亮黑暗的区域。注意：使用时会暴露你的位置！"
 icon = ExtResource("1_c1e4t")
-item_type = 2
+item_type = 3
+is_equippable = true
 use_effect = "flashlight"
+model_scene = ExtResource("2_model")

@@ -39,6 +39,9 @@ current = true
 target_position = Vector3(0, 0, -2.5)
 collision_mask = 1
 
+[node name="EquipmentPoint" type="Node3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, -0.25, -0.5)
+
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=770112400]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 mesh = SubResource("CapsuleMesh_1")

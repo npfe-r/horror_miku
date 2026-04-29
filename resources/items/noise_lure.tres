@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dkcreak267pg8" path="res://scripts/items/item_data.gd" id="1_noise"]
 [ext_resource type="Texture2D" uid="uid://chwy4lml6suqi" path="res://icon.svg" id="1_rtw34"]
+[ext_resource type="PackedScene" path="res://resources/models/noise_lure_model.tscn" id="2_model"]
 
 [resource]
 script = ExtResource("1_noise")
@@ -12,4 +13,6 @@ icon = ExtResource("1_rtw34")
 item_type = 1
 max_stack = 3
 is_consumable = true
+is_equippable = true
 use_effect = "noise_lure"
+model_scene = ExtResource("2_model")

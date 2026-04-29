@@ -4,10 +4,10 @@
 [ext_resource type="PackedScene" uid="uid://bq8k5m2j3wanp" path="res://scenes/ui/debug_ui.tscn" id="2_ui"]
 [ext_resource type="PackedScene" uid="uid://b6k8twejfmlna" path="res://scenes/objects/door.tscn" id="3_door"]
 [ext_resource type="PackedScene" path="res://scenes/objects/switch.tscn" id="4_switch"]
-[ext_resource type="Resource" path="res://resources/items/flashlight.tres" id="5_7x1jh"]
+[ext_resource type="Resource" uid="uid://2h1shkjch6l1" path="res://resources/items/flashlight.tres" id="5_7x1jh"]
 [ext_resource type="PackedScene" path="res://scenes/objects/pickup_item.tscn" id="5_pickup"]
-[ext_resource type="Resource" path="res://resources/items/noise_lure.tres" id="6_hfwtw"]
-[ext_resource type="Resource" path="res://resources/items/classroom_key.tres" id="7_2mu0v"]
+[ext_resource type="Resource" uid="uid://chv70nb8n8ijy" path="res://resources/items/noise_lure.tres" id="6_hfwtw"]
+[ext_resource type="Resource" uid="uid://bt3ptxp387clo" path="res://resources/items/classroom_key.tres" id="7_2mu0v"]
 [ext_resource type="PackedScene" uid="uid://dh2k5m3j7v8xp" path="res://scenes/ui/player_hud.tscn" id="8_hud"]
 [ext_resource type="PackedScene" uid="uid://c8ym5k3j7xmqv" path="res://scenes/enemies/monster.tscn" id="9_monster"]
 

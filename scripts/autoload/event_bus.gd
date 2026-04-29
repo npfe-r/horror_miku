@@ -21,6 +21,8 @@ signal monster_lost_player
 ## 道具事件
 signal item_picked_up(item: ItemData, count: int)
 signal item_used(item: ItemData)
+signal item_equipped(item: ItemData)
+signal item_unequipped
 signal inventory_changed
 
 ## 交互事件

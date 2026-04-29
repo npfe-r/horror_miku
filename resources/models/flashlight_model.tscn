@@ -1,0 +1,55 @@
+[gd_scene format=3 uid="uid://1psc8rnyxpyc"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_body"]
+top_radius = 0.03
+bottom_radius = 0.03
+height = 0.2
+radial_segments = 12
+
+[sub_resource type="StandardMaterial3D" id="Material_flashlight"]
+albedo_color = Color(0.9, 0.85, 0.2, 1)
+metallic = 0.7
+roughness = 0.3
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_head"]
+top_radius = 0.01
+bottom_radius = 0.04
+height = 0.08
+radial_segments = 12
+
+[sub_resource type="StandardMaterial3D" id="Material_head"]
+albedo_color = Color(0.3, 0.3, 0.3, 1)
+metallic = 0.5
+roughness = 0.6
+
+[sub_resource type="SphereMesh" id="SphereMesh_light"]
+radius = 0.015
+height = 0.03
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="Material_light"]
+albedo_color = Color(1, 1, 0.9, 1)
+emission_enabled = true
+emission = Color(1, 1, 0.7, 1)
+emission_energy_multiplier = 2.0
+
+[node name="FlashlightModel" type="Node3D" unique_id=1395216590]
+
+[node name="Pivot" type="Node3D" parent="." unique_id=1836960605]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, 0)
+
+[node name="Body" type="MeshInstance3D" parent="Pivot" unique_id=1175104339]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.10675889, 0)
+mesh = SubResource("CylinderMesh_body")
+surface_material_override/0 = SubResource("Material_flashlight")
+
+[node name="Head" type="MeshInstance3D" parent="Pivot" unique_id=764422519]
+transform = Transform3D(1, 0, 0, 0, -1, 8.742278e-08, 0, -8.742278e-08, -1, 0, 0.029, 0)
+mesh = SubResource("CylinderMesh_head")
+surface_material_override/0 = SubResource("Material_head")
+
+[node name="LightBulb" type="MeshInstance3D" parent="Pivot" unique_id=474280578]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.075, 0)
+mesh = SubResource("SphereMesh_light")
+surface_material_override/0 = SubResource("Material_light")

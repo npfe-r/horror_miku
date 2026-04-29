@@ -1,0 +1,36 @@
+[gd_scene load_steps=4 format=3]
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+size = Vector3(0.08, 0.06, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_cross_v"]
+size = Vector3(0.02, 0.04, 0.005)
+
+[sub_resource type="BoxMesh" id="BoxMesh_cross_h"]
+size = Vector3(0.04, 0.02, 0.005)
+
+[sub_resource type="StandardMaterial3D" id="Material_body"]
+albedo_color = Color(0.95, 0.95, 0.95, 1)
+metallic = 0.1
+roughness = 0.7
+
+[sub_resource type="StandardMaterial3D" id="Material_cross"]
+albedo_color = Color(0.85, 0.1, 0.1, 1)
+metallic = 0.0
+roughness = 0.8
+
+[node name="FirstAidKitModel" type="Node3D"]
+
+[node name="Body" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_body")
+surface_material_override/0 = SubResource("Material_body")
+
+[node name="CrossVertical" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.0225)
+mesh = SubResource("BoxMesh_cross_v")
+surface_material_override/0 = SubResource("Material_cross")
+
+[node name="CrossHorizontal" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.0225)
+mesh = SubResource("BoxMesh_cross_h")
+surface_material_override/0 = SubResource("Material_cross")

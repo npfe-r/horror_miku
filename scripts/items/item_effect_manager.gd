@@ -7,8 +7,11 @@ static func use_item(item: ItemData, user: Node) -> bool:
 	if not item:
 		return false
 	
+	if item.use(user):
+		return true
+	
 	if item.use_effect.is_empty():
-		return false
+		return true
 	
 	match item.use_effect:
 		"flashlight":

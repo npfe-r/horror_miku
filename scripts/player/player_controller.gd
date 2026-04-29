@@ -62,8 +62,12 @@ var _noise_emit_timer: float = 0.0
 
 var inventory: Inventory = null
 
+var equipped_item: ItemData = null
+var equipped_model_instance: Node3D = null
+
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera3D
+@onready var equipment_point: Node3D = $Head/EquipmentPoint
 @onready var interaction_ray: RayCast3D = $Head/InteractionRay
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
 @onready var ceiling_check: ShapeCast3D = $CeilingCheck
@@ -221,6 +225,11 @@ func set_hiding(hiding: bool) -> void:
 	is_hiding = hiding
 	if hiding:
 		velocity = Vector3.ZERO
+		if equipped_model_instance:
+			equipped_model_instance.visible = false
+	else:
+		if equipped_model_instance:
+			equipped_model_instance.visible = true
 
 func get_current_speed() -> float:
 	if is_crouching:
@@ -248,17 +257,37 @@ func _setup_inventory() -> void:
 	print("[PlayerController] 背包系统已初始化")
 
 func _handle_quick_bar_input() -> void:
+	var slot_changed := false
+	
 	if Input.is_action_just_pressed("quick_slot_1"):
 		inventory.select_quick_slot(0)
+		slot_changed = true
 	elif Input.is_action_just_pressed("quick_slot_2"):
 		inventory.select_quick_slot(1)
+		slot_changed = true
 	elif Input.is_action_just_pressed("quick_slot_3"):
 		inventory.select_quick_slot(2)
+		slot_changed = true
 	elif Input.is_action_just_pressed("quick_slot_4"):
 		inventory.select_quick_slot(3)
+		slot_changed = true
+	
+	if slot_changed:
+		_auto_equip_from_selected_slot()
 	
 	if Input.is_action_just_pressed("use_item"):
 		use_current_item()
+
+func _auto_equip_from_selected_slot() -> void:
+	var item: ItemData = inventory.get_selected_item()
+	
+	if equipped_item:
+		if item and item.item_id == equipped_item.item_id:
+			return
+		unequip_item()
+	
+	if item and item.is_equippable:
+		equip_item(item)
 
 func pickup_item(item: ItemData, count: int = 1) -> bool:
 	if not inventory:
@@ -275,6 +304,46 @@ func use_current_item() -> void:
 		return
 	
 	inventory.use_quick_slot_item(inventory.selected_quick_slot, self)
+
+func equip_item(item: ItemData) -> void:
+	if not item or not item.model_scene:
+		push_warning("[PlayerController] 无法装备物品: 缺少模型场景")
+		return
+	
+	if equipped_item:
+		unequip_item()
+	
+	var model: Node3D = item.model_scene.instantiate() as Node3D
+	if not model:
+		push_warning("[PlayerController] 装备模型实例化失败")
+		return
+	
+	equipment_point.add_child(model)
+	equipped_model_instance = model
+	equipped_item = item
+	
+	EventBus.item_equipped.emit(item)
+	print("[PlayerController] 已装备: %s" % item.item_name)
+
+func unequip_item() -> void:
+	if not equipped_item:
+		return
+	
+	if equipped_model_instance:
+		equipped_model_instance.queue_free()
+		equipped_model_instance = null
+	
+	var unequipped: ItemData = equipped_item
+	equipped_item = null
+	
+	EventBus.item_unequipped.emit()
+	print("[PlayerController] 已卸下装备: %s" % unequipped.item_name)
+
+func is_item_equipped() -> bool:
+	return equipped_item != null
+
+func get_equipped_item() -> ItemData:
+	return equipped_item
 
 func use_item_at_slot(slot_index: int) -> bool:
 	if not inventory:
