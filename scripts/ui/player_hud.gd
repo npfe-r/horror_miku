@@ -1,6 +1,9 @@
 class_name PlayerHUD
 extends Control
 
+const STAMINA_BG_COLOR_NORMAL: Color = Color(0.08, 0.08, 0.08, 0.5)
+const STAMINA_BG_COLOR_COOLDOWN: Color = Color(1, 0.03, 0.03, 0.55)
+
 @onready var crosshair: Control = $Crosshair
 @onready var interaction_label: Label = $InteractionLabel
 @onready var stamina_bar_bg: ColorRect = $StaminaBarContainer/StaminaBarBg
@@ -18,6 +21,7 @@ var player: PlayerController = null
 
 func _ready() -> void:
 	EventBus.stamina_changed.connect(_on_stamina_changed)
+	EventBus.stamina_recovery_cooldown_changed.connect(_on_stamina_recovery_cooldown_changed)
 	EventBus.interaction_prompt_changed.connect(_on_interaction_prompt_changed)
 	EventBus.inventory_changed.connect(_on_inventory_changed)
 	EventBus.item_equipped.connect(_on_item_equipped)
@@ -71,6 +75,10 @@ func _on_stamina_changed(stamina: float) -> void:
 		else:
 			await get_tree().process_frame
 			_on_stamina_changed(stamina)
+
+func _on_stamina_recovery_cooldown_changed(ratio: float) -> void:
+	if stamina_bar_bg:
+		stamina_bar_bg.color = STAMINA_BG_COLOR_NORMAL.lerp(STAMINA_BG_COLOR_COOLDOWN, ratio)
 
 func _on_hud_resized() -> void:
 	if stamina_bar_fill and stamina_bar_bg:

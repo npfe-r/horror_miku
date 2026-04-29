@@ -182,15 +182,20 @@ func _handle_stamina(delta: float) -> void:
 	if is_running and velocity.length() > 0.1:
 		stamina -= STAMINA_DRAIN_RATE * delta
 		stamina = max(stamina, 0.0)
-		if stamina <= 0.0:
+		if stamina <= 0.0 and _stamina_recovery_cooldown <= 0.0:
 			_stamina_recovery_cooldown = STAMINA_RECOVERY_COOLDOWN
+			EventBus.stamina_recovery_cooldown_changed.emit(1.0)
 		EventBus.stamina_changed.emit(stamina)
 	elif not is_running:
 		if stamina >= STAMINA_MAX:
-			_stamina_recovery_cooldown = 0.0
+			if _stamina_recovery_cooldown > 0.0:
+				_stamina_recovery_cooldown = 0.0
+				EventBus.stamina_recovery_cooldown_changed.emit(0.0)
 			return
 		if _stamina_recovery_cooldown > 0.0:
 			_stamina_recovery_cooldown -= delta
+			var ratio: float = clampf(_stamina_recovery_cooldown / STAMINA_RECOVERY_COOLDOWN, 0.0, 1.0)
+			EventBus.stamina_recovery_cooldown_changed.emit(ratio)
 		else:
 			stamina += STAMINA_RECOVERY_RATE * delta
 			stamina = min(stamina, STAMINA_MAX)
@@ -376,7 +381,9 @@ func get_item_count(item_id: String) -> int:
 
 func heal(amount: float = 50.0) -> void:
 	stamina = mini(stamina + amount, STAMINA_MAX)
-	_stamina_recovery_cooldown = 0.0
+	if _stamina_recovery_cooldown > 0.0:
+		_stamina_recovery_cooldown = 0.0
+		EventBus.stamina_recovery_cooldown_changed.emit(0.0)
 	emit_signal("stamina_changed", stamina)
 
 func _on_inventory_item_added(item: ItemData, count: int) -> void:

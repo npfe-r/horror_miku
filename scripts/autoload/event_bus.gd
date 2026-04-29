@@ -12,6 +12,7 @@ signal game_won
 signal noise_made(level: float, position: Vector3, max_range: float)
 signal player_caught
 signal stamina_changed(current: float)
+signal stamina_recovery_cooldown_changed(ratio: float)
 
 ## 怪物事件
 signal monster_state_changed(state: String)
