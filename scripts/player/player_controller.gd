@@ -18,6 +18,7 @@ const STAMINA_MAX: float = 100.0
 const STAMINA_DRAIN_RATE: float = 20.0
 const STAMINA_RECOVERY_RATE: float = 15.0
 const STAMINA_RECOVERY_COOLDOWN: float = 2.0
+const STAMINA_JUMP_COST: float = 15.0
 
 const NOISE_WALK: float = 2.0
 const NOISE_RUN: float = 3.0
@@ -113,9 +114,11 @@ func _handle_movement(delta: float) -> void:
 		if is_jumping:
 			is_jumping = false
 	
-	if Input.is_action_just_pressed("jump") and is_on_floor() and not is_crouching:
+	if Input.is_action_just_pressed("jump") and is_on_floor() and not is_crouching and stamina >= STAMINA_JUMP_COST:
 		velocity.y = JUMP_VELOCITY
 		is_jumping = true
+		stamina -= STAMINA_JUMP_COST
+		EventBus.stamina_changed.emit(stamina)
 		make_noise(NOISE_JUMP, NOISE_MAX_RANGE_JUMP)
 	
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")

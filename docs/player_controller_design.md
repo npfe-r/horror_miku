@@ -96,12 +96,14 @@ func _input(event: InputEvent) -> void:
 | 参数 | 值 | 说明 |
 |------|-----|------|
 | 跳跃速度 | 4.5 m/s | JUMP_VELOCITY |
+| 跳跃体力消耗 | 15.0 | STAMINA_JUMP_COST |
 | 跳跃噪音 | 3.5 | NOISE_JUMP |
 | 落地噪音 | 3.0 | NOISE_LAND |
 
 #### 2.3.2 跳跃条件
 - 必须在地面上 (`is_on_floor() == true`)
 - 不能处于蹲下状态 (`is_crouching == false`)
+- 体力必须 ≥ `STAMINA_JUMP_COST`（15.0）
 
 #### 2.3.3 跳跃状态管理
 ```gdscript
@@ -199,6 +201,7 @@ func _handle_stamina(delta: float) -> void:
 #### 2.5.3 体力限制
 - 体力大于 0 时可以奔跑（可消耗至 0）
 - 奔跑时体力持续消耗
+- 跳跃消耗 15 点体力，体力不足时无法跳跃
 - 体力降至 0 时进入恢复冷却，冷却期间不恢复体力
 - 冷却结束后自动恢复体力
 - 使用恢复道具可立即恢复体力并重置冷却
