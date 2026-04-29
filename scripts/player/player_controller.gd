@@ -260,6 +260,7 @@ func set_hiding(hiding: bool) -> void:
 		velocity = Vector3.ZERO
 		if equipped_model_instance:
 			equipped_model_instance.visible = false
+		EventBus.interaction_prompt_changed.emit("离开")
 	else:
 		current_hiding_spot = null
 		head.rotation = Vector3.ZERO
@@ -268,6 +269,7 @@ func set_hiding(hiding: bool) -> void:
 		_hiding_head_pitch = 0.0
 		if equipped_model_instance:
 			equipped_model_instance.visible = true
+		EventBus.interaction_prompt_changed.emit("")
 
 func hide_in_spot(spot: Node) -> void:
 	current_hiding_spot = spot
