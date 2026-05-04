@@ -22,6 +22,7 @@ GameManager="*res://scripts/autoload/game_manager.gd"
 InteractionManager="*res://scripts/autoload/interaction_manager.gd"
 UIManager="*res://scripts/autoload/ui_manager.gd"
 SaveManager="*res://scripts/autoload/save_manager.gd"
+HighlightManager="*res://scripts/autoload/highlight_manager.gd"
 
 [display]
 

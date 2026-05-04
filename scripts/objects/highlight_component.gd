@@ -1,33 +1,47 @@
-## HighlightComponent — 可交互物体的高亮效果复用组件
 class_name HighlightComponent
 extends RefCounted
 
 var _is_highlighted: bool = false
-var _original_materials: Dictionary = {}
+var _highlight_layer_bit: int = -1
+var _affected_meshes: Array[MeshInstance3D] = []
+var _original_layers: Dictionary = {}
+
+func _init() -> void:
+	var hm := Engine.get_main_loop().root.get_node_or_null("/root/HighlightManager") as Node
+	if hm:
+		_highlight_layer_bit = hm.get_highlight_layer_bit()
 
 func is_highlighted() -> bool:
 	return _is_highlighted
 
-func apply(mesh_instances: Array[MeshInstance3D], color: Color) -> void:
+func apply(mesh_instances: Array[MeshInstance3D], _color: Color) -> void:
 	if _is_highlighted:
 		return
 	_is_highlighted = true
 
 	for mesh in mesh_instances:
-		_original_materials[mesh] = mesh.get_surface_override_material(0)
-		var material := StandardMaterial3D.new()
-		material.albedo_color = color
-		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		mesh.set_surface_override_material(0, material)
+		if not is_instance_valid(mesh):
+			continue
 
-func remove(mesh_instances: Array[MeshInstance3D]) -> void:
+		_affected_meshes.append(mesh)
+		if not _original_layers.has(mesh):
+			_original_layers[mesh] = mesh.layers
+
+		mesh.set_layer_mask_value(_highlight_layer_bit + 1, true)
+
+func remove(_mesh_instances: Array[MeshInstance3D]) -> void:
 	if not _is_highlighted:
 		return
 	_is_highlighted = false
 
-	for mesh in mesh_instances:
-		if _original_materials.has(mesh):
-			mesh.set_surface_override_material(0, _original_materials[mesh])
+	for mesh in _affected_meshes:
+		if not is_instance_valid(mesh):
+			continue
+
+		if _original_layers.has(mesh):
+			mesh.layers = _original_layers[mesh]
 		else:
-			mesh.set_surface_override_material(0, null)
-	_original_materials.clear()
+			mesh.set_layer_mask_value(_highlight_layer_bit + 1, false)
+
+	_affected_meshes.clear()
+	_original_layers.clear()

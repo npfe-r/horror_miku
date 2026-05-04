@@ -4,13 +4,14 @@
 
 ### 1.1 基本信息
 - **系统名称**: 交互对象系统
-- **版本**: 1.3
+- **版本**: 1.5
 - **更新日期**: 2026-05-04
 - **相关文件**:
-  - `resources/shaders/stencil_fill.gdshader` - Stencil 标记填充 Shader
-  - `resources/shaders/outline_expand.gdshader` - 外扩描边高亮 Shader
+  - `resources/shaders/highlight_depth_encode.gdshader` - 深度编码 Shader
+  - `resources/shaders/highlight_composite.gdshader` - 合成 Shader（内发光+描边）
   - `scripts/objects/interactable_object.gd` - 可交互对象基类
-  - `scripts/objects/highlight_component.gd` - 高亮效果组件
+  - `scripts/objects/highlight_component.gd` - 高亮组件（图层管理）
+  - `scripts/autoload/highlight_manager.gd` - 高亮管理器（Autoload）
   - `scripts/objects/pickup_item.gd` - 可拾取物品
   - `scripts/objects/door.gd` - 门系统
   - `scripts/objects/hiding_spot.gd` - 藏身处
@@ -37,6 +38,18 @@ RefCounted
 ### 1.3 交互架构
 
 ```
+HighlightManager (Autoload)
+│
+├─ SubViewport (仅渲染 1024 层)
+│   ├─ transparent_bg = true（无高亮物体处透明）
+│   └─ 跟随玩家相机变换、FOV、视口大小
+│
+├─ 玩家相机子节点: MeshInstance3D (QuadMesh) + composite Shader
+│   ├─ 读取主场景 screen_tex
+│   ├─ 读取 SubViewport 的 highlighted_tex
+│   ├─ hl.a > 0 → 内发光检测（无深度编码，纯 Alpha 判断）
+│   └─ 邻域采样 → 描边检测（膨胀算法）
+│
 InteractionManager (Autoload)
 │
 ├─ 每帧射线检测 → 找到可交互对象
@@ -45,7 +58,8 @@ InteractionManager (Autoload)
 │   └─ 其他实现了 can_interact + set_highlight 的节点
 │
 ├─ 高亮管理 → HighlightComponent
-│   └─ 采用 Stencil Buffer 方案：先在原始物体上写入 Stencil 标记，再在外扩 Mesh 中只渲染 Stencil 不匹配的区域，解决转角间隙问题
+│   └─ 调用 set_layer_mask_value(layer 1024) 启用/禁用高亮
+│       └─ 高亮管理器自动渲染并合成后处理效果
 │
 └─ 交互分发 → 调用对象的 interact() 方法
     ├─ PickupItem → 添加到背包
@@ -109,208 +123,287 @@ func _find_mesh_instances() -> void:
 
 ---
 
-## 3. HighlightComponent — 高亮组件
+## 3. 高亮系统
+
+高亮系统由三层组成：
+
+| 层级 | 组件 | 职责 |
+|------|------|------|
+| 应用层 | `HighlightComponent` | 每个可交互对象持有，管理 Mesh 的渲染图层 |
+| 管理/渲染层 | `HighlightManager` (Autoload) | 管理 SubViewport + 合成效果 |
+| Shader 层 | `highlight_composite.gdshader` | GPU 后处理内发光 + 描边 |
+
+---
+
+### 3.1 HighlightComponent — 高亮组件
 
 **类名**: HighlightComponent
 **继承**: RefCounted
 **文件**: [highlight_component.gd](../scripts/objects/highlight_component.gd)
 
-### 3.1 设计说明
+#### 3.1.1 设计说明
 
 `RefCounted` 类型，非 Node，不参与场景树。每个 `InteractableObject` 持有自己的 `HighlightComponent` 实例。
 
-高亮实现采用 **Stencil Buffer 背面外扩方案**。该方案通过两遍绘制解决纯法线外扩在转角处不连续的问题：
+**职责**：管理渲染图层。当物体被高亮时，将 Mesh 的渲染图层添加到 1024 层；取消高亮时恢复原始图层。
 
-1. **Pass 1（Stencil 标记）**：在原始 Mesh 上叠加一个不可见的 Stencil 填充材质，将物体轮廓写入 Stencil Buffer
-2. **Pass 2（外扩检测）**：外扩 Mesh 使用 Stencil 测试条件 `COMPARE_OP_NOT_EQUAL`，仅渲染 **Stencil 值不匹配**的区域（即原始物体轮廓之外）
-
-这确保了即使法线外扩在转角处产生间隙，描边也只出现在原始物体边界之外，形成视觉连续的轮廓。
-
-### 3.2 技术原理
-
-```
-GPU 渲染管线（单帧内两遍绘制）:
-
-                    ┌─── Stencil Buffer ───┐
-                    │ 初始值: 0             │
-                    └───────────────────────┘
-
-Pass 1 — Stencil 标记（原始 Mesh 不可见叠加层）
-  Mesh: 原始 Mesh（共享引用，不修改原始材质）
-  Shader: stencil_fill.gdshader
-    → fragment(): ALPHA = 0.0（不可见）
-    → Material.stencil_write_value = 1  ★ 写入 Stencil = 1
-    → 结果：原始物体所在像素的 Stencil 值变为 1
-
-                    ┌─── Stencil Buffer ───┐
-                    │ 物体区域: 1           │
-                    │ 其他区域: 0           │
-                    └───────────────────────┘
-
-Pass 2 — 外扩描边（外扩 Mesh，背面渲染 + Stencil 测试）
-  Mesh: 外扩副本（顶点沿法线扩展）
-  Shader: outline_expand.gdshader
-    → vertex(): VERTEX += NORMAL * outline_width  ★ 顶点外扩
-    → render_mode: cull_front                     ★ 仅渲染背面
-    → Material.stencil_test_value = 1
-    → Material.stencil_test_op = NOT_EQUAL        ★ 只在 Stencil != 1 区域绘制
-    → 结果：原始物体外扩的背面区域中，只有超出原始轮廓的部分被渲染
-```
-
-**解决转角间隙的原理**：
-
-```
-法线外扩转角（无 Stencil）         +    Stencil Buffer 标记        =   最终渲染结果
-                                      ┌──────────┐
-    ┌────────┐                        │ Stencil=1 │                ┌────────┐
-    │  正    │   ← 间隙(无三角形)     │  (原始)   │                │  正    │
-    │  面    │                        │           │                │  面    │
-    └────────┘                        │           │                └──┄┄┄┄┄┄┤
-   ↙        ↘                         │           │                     ↙  ↘
- ┌─┐        ┌─┐                      │           │                ┌─┐    ┌─┐
- │背│        │背│  ← 外扩背面       └──────────┘                │背│    │背│
- │面│        │面│  被间隙割裂                                   │面│    │面│
- └─┘        └─┘                                               └─┘    └─┘
-                                                                 ▲     ▲
-                                                         Stencil 测试裁剪
-                                                         只保留外部区域
-```
-
-关键区别：
-- **纯法线外扩**：转角处的顶点沿平均法线移动，相邻三角面分离产生间隙
-- **Stencil Buffer 方案**：间隙处的 Stencil 值仍为 0（非原始物体），外扩 Mesh 在此处被 Stencil 测试通过的区域形成连续轮廓，间隙视觉上消失
-
-### 3.3 Shader
-
-#### stencil_fill.gdshader — Stencil 标记
-
-**文件**: [stencil_fill.gdshader](../resources/shaders/stencil_fill.gdshader)
-
-```glsl
-shader_type spatial;
-render_mode blend_mix, unshaded;
-
-void fragment() {
-    ALBEDO = vec3(0.0);
-    ALPHA = 0.0;
-}
-```
-
-| 行 | 说明 |
-|----|------|
-| `blend_mix, unshaded` | 非光照混合模式，保证渲染通过且不写入可见颜色 |
-| `ALPHA = 0.0` | 完全透明，不产生可见像素 |
-| Stencil 写入 | 通过 Material 属性 `stencil_write_value = 1` 在 GDScript 中配置 |
-
-#### outline_expand.gdshader — 外扩描边
-
-**文件**: [outline_expand.gdshader](../resources/shaders/outline_expand.gdshader)
-
-```glsl
-shader_type spatial;
-render_mode blend_mix, unshaded, cull_front, depth_draw_always;
-
-uniform vec4 outline_color: source_color = vec4(1.0, 1.0, 0.5, 1.0);
-uniform float outline_width: hint_range(0.0, 0.5) = 0.06;
-
-void vertex() {
-    VERTEX += NORMAL * outline_width;
-}
-
-void fragment() {
-    ALBEDO = outline_color.rgb;
-    ALPHA = outline_color.a;
-}
-```
-
-**Shader 参数**：
-
-| 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `outline_color` | vec4 | (1.0, 1.0, 0.5, 1.0) | 描边颜色 + 透明度（淡黄色） |
-| `outline_width` | float | 0.06 | 描边宽度（0~0.5，值越大描边越宽） |
-
-### 3.4 组件实现
+#### 3.1.2 组件实现
 
 ```gdscript
-const STENCIL_FILL_SHADER: String = "res://resources/shaders/stencil_fill.gdshader"
-const OUTLINE_EXPAND_SHADER: String = "res://resources/shaders/outline_expand.gdshader"
-const STENCIL_VALUE: int = 1
-
 var _is_highlighted: bool = false
-var _fill_material: ShaderMaterial = null
-var _outline_material: ShaderMaterial = null
-var _outline_nodes: Array[MeshInstance3D] = []
-var _original_meshes: Array[MeshInstance3D] = []
+var _highlight_layer_bit: int = -1
+var _affected_meshes: Array[MeshInstance3D] = []
+var _original_layers: Dictionary = {}
 
 func _init() -> void:
-    _fill_material = ShaderMaterial.new()
-    var fill_shader: Shader = load(STENCIL_FILL_SHADER)
-    if fill_shader:
-        _fill_material.shader = fill_shader
-    _fill_material.render_priority = 1
-    _fill_material.stencil_write_value = STENCIL_VALUE
+    var hm := Engine.get_main_loop().root.get_node_or_null("/root/HighlightManager")
+    _highlight_layer_bit = hm.get_highlight_layer_bit() if hm else 10
 
-    _outline_material = ShaderMaterial.new()
-    var outline_shader: Shader = load(OUTLINE_EXPAND_SHADER)
-    if outline_shader:
-        _outline_material.shader = outline_shader
-    _outline_material.stencil_test_value = STENCIL_VALUE
-    _outline_material.stencil_test_op = RenderingServer.COMPARE_OP_NOT_EQUAL
-
-func apply(mesh_instances: Array[MeshInstance3D], color: Color) -> void:
+func apply(mesh_instances: Array[MeshInstance3D], _color: Color) -> void:
     if _is_highlighted:
         return
     _is_highlighted = true
-    _outline_material.set_shader_parameter("outline_color", color)
 
     for mesh in mesh_instances:
-        if not is_instance_valid(mesh) or not mesh.mesh:
+        if not is_instance_valid(mesh):
             continue
+        _affected_meshes.append(mesh)
+        if not _original_layers.has(mesh):
+            _original_layers[mesh] = mesh.layers
+        mesh.set_layer_mask_value(_highlight_layer_bit + 1, true)
 
-        # Pass 1: Stencil 标记 — 在原始 Mesh 上叠加不可见的填充材质
-        mesh.material_overlay = _fill_material
-        _original_meshes.append(mesh)
-
-        # Pass 2: 外扩描边 — 创建外扩副本 Mesh，仅渲染 Stencil 不匹配区域
-        var outline_mesh := MeshInstance3D.new()
-        outline_mesh.name = mesh.name + "_outline"
-        outline_mesh.mesh = mesh.mesh
-        outline_mesh.material_overlay = _outline_material
-        outline_mesh.transform = Transform3D.IDENTITY
-        mesh.add_child(outline_mesh)
-        _outline_nodes.append(outline_mesh)
-
-func remove(mesh_instances: Array[MeshInstance3D]) -> void:
+func remove(_mesh_instances: Array[MeshInstance3D]) -> void:
     if not _is_highlighted:
         return
     _is_highlighted = false
 
-    for node in _outline_nodes:
-        if is_instance_valid(node):
-            node.queue_free()
-    _outline_nodes.clear()
+    for mesh in _affected_meshes:
+        if not is_instance_valid(mesh):
+            continue
+        if _original_layers.has(mesh):
+            mesh.layers = _original_layers[mesh]
+        else:
+            mesh.set_layer_mask_value(_highlight_layer_bit + 1, false)
 
-    for mesh in _original_meshes:
-        if is_instance_valid(mesh):
-            mesh.material_overlay = null
-    _original_meshes.clear()
+    _affected_meshes.clear()
+    _original_layers.clear()
 ```
 
 **关键点**：
-- 外扩 Mesh **共享**原始 Mesh 的网格数据（`outline_mesh.mesh = mesh.mesh`），不复制顶点，仅通过 Shader 在 GPU 上实现外扩
-- Stencil 填充材质通过 `material_overlay` 叠加在原始 Mesh 上，不可见，仅写入 Stencil
-- 外扩 Mesh 作为原始 Mesh 的**子节点**，自动同步所有变换
-- `render_priority = 1` 确保 Stencil 填充在透明通道中**先于**外扩 Mesh 渲染（写入 Stencil 后再读取）
-- 移除高亮时同时清理外扩节点和原始 Mesh 上的 `material_overlay`
+- 使用 `set_layer_mask_value(index, bool)` 操作渲染图层，不破坏原有的图层设置
+- 通过 `_original_layers` 字典保存每个 Mesh 的原始图层，确保完全恢复
+- `color` 参数保留签名兼容性，实际颜色由后处理 Shader 控制（通过 `HighlightManager` 配置）
 
-### 3.5 方法
+#### 3.1.3 方法
 
 | 方法 | 说明 |
 |------|------|
 | `is_highlighted()` | 检查当前是否高亮 |
-| `apply(mesh_instances, color)` | 应用 Stencil 外扩描边高亮 |
-| `remove(mesh_instances)` | 移除高亮，清理外扩节点和 Stencil 标记 |
+| `apply(mesh_instances, color)` | 启用高亮（将 mesh 加入 1024 渲染层） |
+| `remove(mesh_instances)` | 移除高亮（恢复原始渲染层） |
+
+---
+
+### 3.2 HighlightManager — 高亮管理器
+
+**类名**: HighlightManager
+**继承**: Node
+**文件**: [highlight_manager.gd](../scripts/autoload/highlight_manager.gd)
+
+#### 3.2.1 设计说明
+
+`HighlightManager` 是 Autoload 单例，负责整个高亮效果的视口管理和后处理合成。使用 **SubViewport 多通道渲染** 方案：
+
+1. **高亮通道（Highlight Pass）**：一个独立的 SubViewport 仅渲染 1024 层的物体。`transparent_bg = true`，无高亮物体处保持透明
+2. **合成通道（Composite Pass）**：一个全屏 QuadMesh（挂载在玩家相机下）读取主场景颜色以及 SubViewport 纹理，通过 Alpha 通道检测高亮区域，再通过邻域采样检测描边
+
+#### 3.2.2 场景节点结构
+
+```
+HighlightManager (Autoload, 不可见)
+ │
+ ├── HighlightViewport (SubViewport)
+ │   ├── size = 视口大小, transparent_bg = true
+ │   └── render_target_update_mode = UPDATE_ALWAYS
+ │       │
+ │       └── HighlightCamera (Camera3D)
+ │           ├── cull_mask = 1024 (仅渲染高亮层)
+ │           ├── environment = null (无天空/环境)
+ │           └── 每帧同步玩家相机的 Transform + FOV
+ │
+ 玩家相机 (Camera3D, 玩家场景中)
+ │
+ └── HighlightCompositeQuad (MeshInstance3D)
+     ├── mesh = QuadMesh (size 2x2)
+     ├── extra_cull_margin = 16384
+     ├── ignore_occlusion_culling = true
+     └── composite Shader
+         ├─ 读取 screen_tex (主场景)
+         ├─ 读取 highlighted_tex (SubViewport)
+         ├─ hl.a > 0 → 内发光检测
+```
+
+#### 3.2.3 组件实现
+ 
+ ```gdscript
+ const HIGHLIGHT_LAYER_BIT: int = 10
+ 
+ var _highlight_viewport: SubViewport = null
+ var _viewport_camera: Camera3D = null
+ var _composite_quad: MeshInstance3D = null
+ 
+ func _ready() -> void:
+     _setup_highlight_viewport()
+ 
+ func _setup_highlight_viewport() -> void:
+     _highlight_viewport = SubViewport.new()
+     _highlight_viewport.size = get_tree().root.size
+     _highlight_viewport.transparent_bg = true
+     _highlight_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+     add_child(_highlight_viewport)
+ 
+     _viewport_camera = Camera3D.new()
+     _viewport_camera.cull_mask = 1 << HIGHLIGHT_LAYER_BIT
+     _viewport_camera.environment = null
+     _highlight_viewport.add_child(_viewport_camera)
+ 
+ func get_highlight_layer_bit() -> int:
+     return HIGHLIGHT_LAYER_BIT
+ 
+ func _process(_delta: float) -> void:
+     if not _composite_quad:
+         _try_setup_composite_quad()
+     _sync_camera()
+ 
+ func _try_setup_composite_quad() -> void:
+     var player := InteractionManager.get_player()
+     if not player: return
+     var player_camera := player.camera as Camera3D
+     if not player_camera: return
+     _setup_composite_quad(player_camera)
+ 
+ func _setup_composite_quad(camera: Camera3D) -> void:
+     _composite_quad = MeshInstance3D.new()
+     _composite_quad.mesh = QuadMesh.new()
+     _composite_quad.mesh.size = Vector2(2.0, 2.0)
+     _composite_quad.extra_cull_margin = 16384
+     _composite_quad.ignore_occlusion_culling = true
+     _composite_material = ShaderMaterial.new()
+     _composite_material.shader = load("res://resources/shaders/highlight_composite.gdshader")
+     _composite_material.set_shader_parameter("highlighted_tex", _highlight_viewport.get_texture())
+     _composite_quad.material_override = _composite_material
+     _composite_quad.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+     camera.add_child(_composite_quad)
+ 
+ func _sync_camera() -> void:
+     var player := InteractionManager.get_player()
+     if not player: return
+     var player_camera := player.camera as Camera3D
+     if not player_camera or not _viewport_camera: return
+     _viewport_camera.global_transform = player_camera.global_transform
+     _viewport_camera.fov = player_camera.fov
+     _highlight_viewport.size = get_tree().root.size
+ ```
+ 
+ **关键逻辑**：
+ - `_ready()` 创建 SubViewport + 相机，直接渲染高亮层物体到透明背景
+ - `_process()` 中延迟初始化合成 Quad（需等待玩家相机就绪），每帧同步相机变换
+ - `_sync_camera()` 确保 SubViewport 相机的 Transform、FOV、视口大小与主相机完全一致
+ - 不进行深度编码，SubViewport 只负责渲染高亮物体的原始外观到透明背景
+
+---
+
+### 3.3 Shader
+ 
+ #### 3.3.1 highlight_composite.gdshader — 合成效果
+ 
+ **文件**: [highlight_composite.gdshader](../resources/shaders/highlight_composite.gdshader)
+ 
+ ```glsl
+ shader_type spatial;
+ render_mode blend_mix, cull_disabled, unshaded, shadows_disabled, fog_disabled;
+ 
+ uniform int width_outline = 2;
+ uniform vec4 color_inner : source_color = vec4(1.0, 1.0, 0.5, 0.25);
+ uniform vec4 color_outline : source_color = vec4(1.0, 1.0, 0.5, 1.0);
+ uniform sampler2D highlighted_tex : repeat_disable, filter_nearest;
+ uniform sampler2D screen_tex : hint_screen_texture, repeat_disable, filter_nearest;
+ 
+ void vertex() {
+     POSITION = vec4(VERTEX.xy, 1.0, 1.0);
+ }
+ 
+ void fragment() {
+     vec2 suv = SCREEN_UV;
+     vec4 ss = texture(screen_tex, suv);
+     vec4 hl = texture(highlighted_tex, suv);
+ 
+     bool is_inner = hl.a > 0.001;
+     bool is_outline = false;
+ 
+     if (!is_inner) {
+         vec2 p = 1.0 / vec2(VIEWPORT_SIZE.xy);
+         for (int x = -width_outline; x <= width_outline && !is_outline; ++x) {
+             for (int y = -width_outline; y <= width_outline && !is_outline; ++y) {
+                 if (y == 0 && x == 0) continue;
+                 vec2 n_uv = suv + vec2(-p.x * float(x), -p.y * float(y));
+                 if (texture(highlighted_tex, n_uv).a > 0.001) {
+                     is_outline = true;
+                 }
+             }
+         }
+     }
+ 
+     ss.rgb = mix(ss.rgb, color_inner.rgb, is_inner ? color_inner.a : 0.0);
+     ALBEDO = mix(ss.rgb, color_outline.rgb, is_outline ? color_outline.a : 0.0);
+ }
+ ```
+ 
+ **合成算法**：
+ 
+ ```
+ 输入:
+   主场景 screen_tex
+   高亮视口 highlighted_tex（透明背景 + 高亮物体）
+ 
+ 内发光检测:
+   hl.a > 0.001 → 该像素处有高亮物体
+   ★ 不需要深度编码，SubViewport 透明背景处 alpha = 0
+ 
+ 描边检测 (在非内部像素上执行):
+   对当前像素的 (2*width_outline+1)² 邻域进行采样
+   ┌─ 任意邻居的 hl.a > 0.001 → 当前像素标记为描边
+   └─ → 形成膨胀描边效果
+ 
+ 颜色混合:
+   ├─ 内发光: mix(screen, color_inner.rgb, color_inner.a)
+   ├─ 描边:   mix(screen, color_outline.rgb, color_outline.a)
+   └─ 其他:   保持原样
+ ```
+ 
+ **Shader 参数**：
+ 
+ | 参数 | 类型 | 默认值 | 说明 |
+ |------|------|--------|------|
+ | `width_outline` | int | 2 | 描边采样半径像素数 |
+ | `color_inner` | vec4 | (1,1,0.5,0.25) | 内发光颜色（淡黄色，25% 强度） |
+ | `color_outline` | vec4 | (1,1,0.5,1) | 描边颜色（淡黄色，100% 不透明） |
+ | `highlighted_tex` | sampler2D | — | SubViewport 的高亮物体渲染结果 |
+ | `screen_tex` | sampler2D | — | 主场景渲染结果（`hint_screen_texture`） |
+ 
+ #### 3.3.2 与纯法线外扩/Stencil 方案对比
+
+| 对比项 | Fresnel 描边 | 法线外扩 + Stencil | SubViewport 后处理（当前） |
+|--------|-------------|-------------------|--------------------------|
+| 转角连续性 | 依赖视角，凹面失效 | 中等（Stencil 裁剪） | ★ 最佳（屏幕空间邻域检测） |
+| 内发光 | 无 | 无 | ★ 支持（透明度可调） |
+| 性能 | ★ 最佳 | 中等 | 中等（额外一次视口渲染） |
+| 对场景无侵入 | ★ 是 | 是（外扩 Mesh 子节点） | ★ 是（仅改渲染层位） |
+| 描边一致性 | 边缘薄中间厚 | ★ 均匀 | ★ 均匀 |
+| 多物体同时高亮 | 支持 | 支持 | ★ 优化（单次视口渲染服务所有物体） |
+| 实现复杂度 | ★ 简单 | 中等 | 较复杂（需管理 SubViewport） |
+
+---
 
 ---
 
@@ -673,17 +766,16 @@ Switch 通过 `toggle_objects` 控制其他节点，支持两种模式：
 
 ### 9.2 添加新的高亮效果
 
-通过创建新的 Shader 并修改 `HighlightComponent` 来实现不同的高亮效果：
+高亮效果由合成 Shader `highlight_composite.gdshader` 控制，无需修改代码即可调整：
 
-1. **创建 Stencil 填充 Shader**（参考 `stencil_fill.gdshader`）— 用于在原始 Mesh 上写入 Stencil 标记
-2. **创建外扩描边 Shader**（参考 `outline_expand.gdshader`）— 用于外扩 Mesh 的描边渲染
-3. **替换材质创建逻辑**：修改 `_init()` 中的 Shader 加载路径
-4. **调整 Stencil 参数**：设置 `stencil_write_value`、`stencil_test_value`、`stencil_test_op`
+**调整颜色/强度**：修改 `color_inner` 和 `color_outline` 参数的默认值，或在 `HighlightManager` 中通过 `set_shader_parameter()` 动态设置。
 
-Shader 需要满足的条件：
-- Stencil 填充 Shader：`blend_mix, unshaded`，`ALPHA = 0.0` 不可见
-- 外扩描边 Shader：`render_mode cull_front`，`vertex()` 中做顶点外扩
-- `render_mode unshaded` — 非光照模式，描边颜色不受光照影响
+**修改描边宽度**：调整 `width_outline` 参数（像素半径）。
+
+**创建全新的后处理效果**：
+1. **创建新的深度编码 Shader**（参考 `highlight_depth_encode.gdshader`）
+2. **创建新的合成 Shader**（参考 `highlight_composite.gdshader`）
+3. **修改 `HighlightManager`**：替换 Shader 加载路径和参数传递
 
 ---
 
@@ -701,10 +793,10 @@ Shader 需要满足的条件：
 
 | 文件 | 说明 |
 |------|------|
-| [resources/shaders/stencil_fill.gdshader](../resources/shaders/stencil_fill.gdshader) | Stencil 标记填充 Shader |
-| [resources/shaders/outline_expand.gdshader](../resources/shaders/outline_expand.gdshader) | 外扩描边高亮 Shader |
+| [resources/shaders/highlight_composite.gdshader](../resources/shaders/highlight_composite.gdshader) | 合成 Shader（内发光 + 描边后处理） |
 | [interactable_object.gd](../scripts/objects/interactable_object.gd) | 可交互对象基类 |
-| [highlight_component.gd](../scripts/objects/highlight_component.gd) | 高亮组件 |
+| [highlight_component.gd](../scripts/objects/highlight_component.gd) | 高亮组件（渲染图层管理） |
+| [highlight_manager.gd](../scripts/autoload/highlight_manager.gd) | 高亮管理器（Autoload，SubViewport + 合成） |
 | [pickup_item.gd](../scripts/objects/pickup_item.gd) | 可拾取物品 |
 | [door.gd](../scripts/objects/door.gd) | 门系统 |
 | [hiding_spot.gd](../scripts/objects/hiding_spot.gd) | 藏身处 |
@@ -717,8 +809,10 @@ Shader 需要满足的条件：
 |------|------|------|
 | 1.0 | 2026-04-29 | 初始版本 |
 | 1.1 | 2026-05-04 | 高亮系统重写：使用 Shader + material_overlay 替代 StandardMaterial3D 替换方案，新增 Fresnel 描边效果 |
-| 1.2 | 2026-05-04 | 高亮系统重写：改为背面外扩描边方案，外扩 Mesh 通过顶点沿法线扩展 + cull_front 渲染背面形成轮廓外壳 |
-| 1.3 | 2026-05-04 | 高亮系统重写：改为 Stencil Buffer 外扩方案，通过 stencil_fill 材质写入标记 + 外扩 Mesh 中 Stencil 测试 NOT_EQUAL，解决转角处法线外扩不连续的问题 |
+| 1.2 | 2026-05-04 | 高亮系统重写：改为背面外扩描边方案，外扩 Mesh 顶点沿法线扩展 + cull_front |
+| 1.3 | 2026-05-04 | 高亮系统重写：改为 Stencil Buffer 外扩方案，解决法线外扩转角不连续问题 |
+| 1.4 | 2026-05-04 | 高亮系统重写：参考 higilight 项目，改为 SubViewport 多通道后处理方案，HighlightComponent 简化为图层管理，新增 HighlightManager Autoload 和 composite Shader，支持内发光 + 描边 |
+| 1.5 | 2026-05-04 | 修复全屏红黄条纹深度渐变问题：移除深度编码 Shader（highlight_depth_encode.gdshader），改为直接检测 SubViewport 纹理 Alpha 通道，composite Shader 使用 hl.a > 0 判断高亮区域，不再需要深度比较 |
 
 ---
 
